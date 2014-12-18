@@ -19,123 +19,100 @@
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.7/angular.min.js"></script>
 <!--highcharts-->
 <script src="http://code.highcharts.com/highcharts.js"></script>
+<!--custom CSS-->
+<link rel="stylesheet" type="text/css" href="main.css"/>
 </head>
 <body ng-app="myApp">
-<!--set domain of scandalous backend-->
-<div ng-controller="domainCtrl">
-  Domain: <input type="text" ng-model="domain" ng-change="setDomain(domain)"/>
-</div>
-
-<div ng-controller="nodeCtrl">
-  <button ng-click="domain = getNodes()" ng-model="domain">{{domain}}</button>
-</div>
-
 <div class="container">
-  <div class="row">
-    <div class="col-md-8">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Interactive Graph</h3>
-            </div>
-            <div class="panel-body">
-              <!--graph-->
-              graph
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Current Channel Value</h3>
-            </div>
-            <div class="panel-body">
-              <!--value-->
-              value
-            </div>
+  <div class="jumbotron">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <!--set domain and port of scandalous backend-->
+          <div class="input-group">
+            <span class="input-group-addon">Domain</span>
+            <input type="text" class="form-control" ng-controller="domainCtrl" ng-model="domain" ng-change="setDomain(domain)"/>
+            <span class="input-group-addon">Port</span>
+            <input type="text" class="form-control" ng-controller="portCtrl" ng-model="port" ng-change="setPort(port)"/>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Available Nodes</h3>
+    <div class="row">
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Interactive Graph</h3>
+              </div>
+              <div class="panel-body">
+                <!--graph-->
+                graph
+              </div>
             </div>
-            <div class="panel-body">
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Current Channel Value</h3>
+              </div>
+              <div class="panel-body" ng-controller="valueCtrl">
+                <!--value-->
+                <lead>{{getValue()}}</lead>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Available Nodes</h3>
+              </div>
               <!--nodes-->
-              nodes
+              <div class="panel-body" ng-controller="nodeCtrl">
+                <ul class="nav nav-pills nav-stacked" id="nodes">
+                  <li ng-repeat="node in nodes" ng-class="{active:isSelected(node.value)}">
+                    <a href="" ng-click="setSelected(node.value)">{{node.value}}: {{node.name}}</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Channels</h3>
-            </div>
-            <div class="panel-body">
+        
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Channels</h3>
+              </div>
               <!--channels-->
-              channels
+              <div class="panel-body" ng-controller="channelCtrl">
+                <ul class="nav nav-pills nav-stacked" id="channels">
+                  <li ng-repeat="channel in channels" ng-class="{active:isSelected(channel.value)}">
+                    <a href="" ng-click="setSelected(channel.value)">{{channel.value}}: {{channel.name}}</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 </div>
 
-<script>
-(function() {
-  var app = angular.module("myApp", []);
-  
-  app.factory("data", function() {
-    return {
-      domain: "127.1.1.1:8000", //default domain of scandalous backend
-      nodes: [], //all available nodes
-      channels: [], //all available channels
-      currState: {
-        node: "", //current node selected
-        channel: "", //current channel selected
-        value: "", //current value from curr node & channel
-      }
-    };
-  });
-
-  //controller to set/get domain of scandalous backend
-  app.controller("domainCtrl", ["$log", "$scope", "data", function($log, $scope, data) {
-    $scope.domain = data.domain;
-
-    $scope.setDomain = function(domain) {
-      data.domain = domain;
-      //$log.log(data.domain);
-    };
-  }]);
-
-  //controller to retrieve all available nodes
-  app.controller("nodeCtrl", ["$log", "$scope", "$http", "data", function($log, $scope, $http, data) {
-    $scope.getNodes = function() {
-      /*
-      $http.get(data.domain + "/packets" + ".html").success(function(response) {
-        $scope.nodes = response;
-      });*/
-
-      return data.domain + "/packets";
-    };
-  }]);
-
-})();
-</script>
+<script src="app.js"></script>
 <!--graph
 <script>
 $(function () { 
