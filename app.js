@@ -39,7 +39,8 @@
     };
   });
   //controller to handle current channel value
-  app.controller("valueCtrl", ["$log", "$scope", "$http", "data", function($log, $scope, $http, data) {
+  app.controller("valueCtrl", ["$log", "$scope", "$http", "$interval", "data",
+      function($log, $scope, $http, $interval, data) {
     $scope.value = data.currState.value;
     //get current channel value
     $scope.getValue = function() {
@@ -51,11 +52,23 @@
         $scope.nodes = response;
       });*/
       $log.log("request:" + request + "\tresponse:" + response);
-      return "500W";
+      data.currState.value = request;
+      $scope.value = data.currState.value;
     };
+    var task;
+    //start process of retrieving channel values
+    var init = function() {
+      //don't start new task if already started
+      if (angular.isDefined(task)) return;
+
+      //start task to call getValue every second
+      task = $interval($scope.getValue, 1000);
+    };
+    init();
   }]);
   //controller to handle channel selection
-  app.controller("channelCtrl", ["$log", "$scope", "data", function($log, $scope, data) {
+  app.controller("channelCtrl", ["$log", "$scope", "data",
+      function($log, $scope, data) {
     $scope.channels = data.channels;
     //returns true if channel is selected, false otherwise
     $scope.isSelected = function(channel) {
@@ -69,7 +82,8 @@
   }]);
 
   //controller to handle node selection
-  app.controller("nodeCtrl", ["$log", "$scope", "$http", "data", function($log, $scope, $http, data) {
+  app.controller("nodeCtrl", ["$log", "$scope", "$http", "data",
+      function($log, $scope, $http, data) {
     $scope.nodes = data.nodes;
     //returns true if node is selected, false otherwise
     $scope.isSelected = function(node) {
@@ -91,7 +105,8 @@
   }]);
 
   //controller to set/get domain of scandalous backend
-  app.controller("domainCtrl", ["$log", "$scope", "data", function($log, $scope, data) {
+  app.controller("domainCtrl", ["$log", "$scope", "data",
+      function($log, $scope, data) {
     $scope.domain = data.domain;
     //sets domain of backend in data to given domain
     $scope.setDomain = function(domain) {
@@ -101,7 +116,8 @@
   }]);
 
   //controller to get/set port of scandalous backend
-  app.controller("portCtrl", ["$log", "$scope", "data", function($log, $scope, data) {
+  app.controller("portCtrl", ["$log", "$scope", "data",
+      function($log, $scope, data) {
     $scope.port = data.port;
     //sets port of backend in data to given port
     $scope.setPort = function(port) {
