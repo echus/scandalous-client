@@ -1,7 +1,7 @@
 (function() {
   var app = angular.module("myApp", []);
   
-  app.factory("data", function() {
+  app.factory("_data", function() {
     return {
       //default domain of scandalous backend
       domain: "127.1.1.1",
@@ -38,91 +38,112 @@
       }
     };
   });
+  //controller to handle interactive graph
+  app.controller("graphCtrl", ["$log", "$scope", "_data",
+      function($log, $scope, _data) {
+      //TODO
+  }]);
   //controller to handle current channel value
-  app.controller("valueCtrl", ["$log", "$scope", "$http", "$interval", "data",
-      function($log, $scope, $http, $interval, data) {
-    $scope.value = data.currState.value;
-    //get current channel value
-    $scope.getValue = function() {
-      var request = data.domain + ":" + data.port + "?node=" +
-          data.currState.node + "&ch=" + data.currState.channel;
-      var response = "";
-      /*
-      $http.get().success(function(response) {
-        $scope.nodes = response;
-      });*/
-      $log.log("request:" + request + "\tresponse:" + response);
-      data.currState.value = request;
-      $scope.value = data.currState.value;
-    };
-    var task;
+  app.controller("valueCtrl", ["$log", "$scope", "$http", "$interval", "_data",
+      function($log, $scope, $http, $interval, _data) {
+    $scope.value = _data.currState.value;
+    var valueTask;
     //start process of retrieving channel values
     var init = function() {
       //don't start new task if already started
-      if (angular.isDefined(task)) return;
+      if (angular.isDefined(valueTask)) return;
 
       //start task to call getValue every second
-      task = $interval($scope.getValue, 1000);
+      valueTask = $interval(function() {
+        //get current channel value
+        var request = _data.domain + ":" + _data.port + "?node=" +
+            _data.currState.node + "&ch=" + _data.currState.channel;
+        var response = "";
+        /*
+        $http.get().success(function(response) {
+          $scope.nodes = response;
+        });*/
+        $log.log("request:" + request + "\tresponse:" + response);
+        _data.currState.value = request;//TODO change to response
+        $scope.value = _data.currState.value;
+      }, 1000);
     };
     init();
   }]);
   //controller to handle channel selection
-  app.controller("channelCtrl", ["$log", "$scope", "data",
-      function($log, $scope, data) {
-    $scope.channels = data.channels;
+  app.controller("channelCtrl", ["$log", "$scope", "$interval", "_data",
+      function($log, $scope, $interval, _data) {
+    $scope.channels = _data.channels;
     //returns true if channel is selected, false otherwise
     $scope.isSelected = function(channel) {
-      return data.currState.channel === channel;
+      return _data.currState.channel === channel;
     };
-    //sets current channel in data to the given channel
+    //sets current channel in _data to the given channel
     $scope.setSelected = function(channel) {
-      data.currState.channel = channel;
-      $log.log("selected channel: " + data.currState.channel);
+      _data.currState.channel = channel;
+      $log.log("selected channel: " + _data.currState.channel);
     };
+    var channelTask;
+    var init = function() {
+      //don't start new task if already started
+      if (angular.isDefined(channelTask)) return;
+
+      //start task to get nodes every second
+      channelTask = $interval(function() {
+        var url = _data.domain + ":" + _data.port + "/nodes/" +
+            _data.currState.channel + "/channel";
+        $log.log(url);
+      }, 1000);
+    };
+    init();
   }]);
 
   //controller to handle node selection
-  app.controller("nodeCtrl", ["$log", "$scope", "$http", "data",
-      function($log, $scope, $http, data) {
-    $scope.nodes = data.nodes;
+  app.controller("nodeCtrl", ["$log", "$scope", "$http", "$interval", "_data",
+      function($log, $scope, $http, $interval, _data) {
+    $scope.nodes = _data.nodes;
     //returns true if node is selected, false otherwise
     $scope.isSelected = function(node) {
-      return data.currState.node === node;
+      return _data.currState.node === node;
     };
-    //sets current node in data to the given node
+    //sets current node in _data to the given node
     $scope.setSelected = function(node) {
-      data.currState.node = node;
-      $log.log("selected node: " + data.currState.node);
+      _data.currState.node = node;
+      $log.log("selected node: " + _data.currState.node);
     };
-    /*
-    $scope.getNodes = function() {
-      $http.get(data.domain + "/packets" + ".html").success(function(response) {
-        $scope.nodes = response;
-      });
-      return data.domain + "/packets";
+    var nodeTask;
+    var init = function() {
+      //don't start new task if already started
+      if (angular.isDefined(nodeTask)) return;
+
+      //start task to get nodes every second
+      nodeTask = $interval(function() {
+        var url = _data.domain + ":" + _data.port + "/nodes";
+        $log.log(url);
+      }, 1000);
     };
-    */
+    init();
   }]);
 
   //controller to set/get domain of scandalous backend
-  app.controller("domainCtrl", ["$log", "$scope", "data",
-      function($log, $scope, data) {
-    $scope.domain = data.domain;
-    //sets domain of backend in data to given domain
+  app.controller("domainCtrl", ["$log", "$scope", "_data",
+      function($log, $scope, _data) {
+    $scope.domain = _data.domain;
+    //sets domain of backend in _data to given domain
     $scope.setDomain = function(domain) {
-      data.domain = domain;
-      $log.log("domain changed to " + data.domain);
+      _data.domain = domain;
+      $log.log("domain changed to " + _data.domain);
     };
   }]);
 
   //controller to get/set port of scandalous backend
-  app.controller("portCtrl", ["$log", "$scope", "data",
-      function($log, $scope, data) {
-    $scope.port = data.port;
-    //sets port of backend in data to given port
+  app.controller("portCtrl", ["$log", "$scope", "_data",
+      function($log, $scope, _data) {
+    $scope.port = _data.port;
+    //sets port of backend in _data to given port
     $scope.setPort = function(port) {
-      data.port = port;
-      $log.log("port changed to " + data.port);
+      _data.port = port;
+      $log.log("port changed to " + _data.port);
     };
   }]);
 
