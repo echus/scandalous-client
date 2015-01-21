@@ -1,0 +1,11 @@
+[
+  {
+    "pkt_id": 28,
+    "priority": 7,
+    "MSG_type": 0,
+    "time": "2014-12-20T14:36:41",
+    "node": 50,
+    "channel": 3,
+    "data": 5
+  }
+]
