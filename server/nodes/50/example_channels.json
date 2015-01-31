@@ -1,9 +1,9 @@
 [
-  {"key": 0, "value": "CURRENT"},
-  {"key": 1, "value": "VOLTAGE"},
-  {"key": 2, "value": "POWER"},
-  {"key": 3, "value": "INTEGRATED CURRENT"},
-  {"key": 4, "value": "INTEGRATED POWER"},
-  {"key": 5, "value": "SAMPLES"},
-  {"key": 6, "value": "RESET INTEGRATION"}
+  {"channel": 0, "value": "CURRENT"},
+  {"channel": 1, "value": "VOLTAGE"},
+  {"channel": 2, "value": "POWER"},
+  {"channel": 3, "value": "INTEGRATED CURRENT"},
+  {"channel": 4, "value": "INTEGRATED POWER"},
+  {"channel": 5, "value": "SAMPLES"},
+  {"channel": 6, "value": "RESET INTEGRATION"}
 ]

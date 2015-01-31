@@ -1,13 +1,13 @@
 [
-  {"key": 10, "value": "DRIVER CONTROL TELEM"},
-  {"key": 20, "value": "SMARTDCDC"},
-  {"key": 30, "value": "BMS LOWER"},
-  {"key": 31, "value": "BMS HIGHER"},
-  {"key": 40, "value": "MPPT READ"},
-  {"key": 41, "value": "MPPT FRONT"},
-  {"key": 50, "value": "CURRENT INTEGRATOR"},
-  {"key": 60, "value": "DRIVER DISPLAY"},
-  {"key": 70, "value": "GPS"},
-  {"key": 80, "value": "SWITCHCARD REAR"},
-  {"key": 81, "value": "SWITCHCARD FRONT"}
+  {"node": 10, "device": "DRIVER CONTROL TELEM"},
+  {"node": 20, "device": "SMARTDCDC"},
+  {"node": 30, "device": "BMS LOWER"},
+  {"node": 31, "device": "BMS HIGHER"},
+  {"node": 40, "device": "MPPT READ"},
+  {"node": 41, "device": "MPPT FRONT"},
+  {"node": 50, "device": "CURRENT INTEGRATOR"},
+  {"node": 60, "device": "DRIVER DISPLAY"},
+  {"node": 70, "device": "GPS"},
+  {"node": 80, "device": "SWITCHCARD REAR"},
+  {"node": 81, "device": "SWITCHCARD FRONT"}
 ]

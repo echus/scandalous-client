@@ -1,149 +1,227 @@
 (function() {
   var app = angular.module("myApp", []);
   
-  app.factory("_data", function() {
+  app.factory("_data", function($http) {
     return {
       //default domain of scandalous backend
       domain: "127.1.1.1",
       //default port of scadalous backend
       port: "8000",
       //all available nodes
-      nodes: [
-        {name: "DRIVER CONTROL TELEM", value: "10"},
-        {name: "SMARTDCDC", value: "20"},
-        {name: "BMS LOWER", value: "30"},
-        {name: "BMS HIGHER", value: "31"},
-        {name: "MPPT READ", value: "40"},
-        {name: "MPPT FRONT", value: "41"},
-        {name: "CURRENT INTEGRATOR", value: "50"},
-        {name: "DRIVER DISPLAY", value: "60"},
-        {name: "GPS", value: "70"},
-        {name: "SWITCHCARD REAR", value: "80"},
-        {name: "SWITCHCARD FRONT", value: "81"}
-      ],
+      nodes: [],
       //all available channels
-      channels: [
-        {name: "CURRENT", value: "0"},
-        {name: "VOLTAGE", value: "1"},
-        {name: "POWER", value: "2"},
-        {name: "INTEGRATED CURRENT", value: "3"},
-        {name: "INTEGRATED POWER", value: "4"},
-        {name: "SAMPLES", value: "5"},
-        {name: "RESET INTEGRATION", value: "6"}
-      ],
+      channels: [],
+      //data samples from server corresponding to selected node and channel
+      values: {
+        //packets from server stored in a circular array of predefined size
+        packets: new Array(10),
+        //index for next oldest packet in packets
+        head: 0,
+        //index for next newest packet in packets
+        tail: 1,
+        /**
+         * inserts the oldest packet at head of packets array.
+         * if packets is full after insertion, the newest packet is lost
+         *
+         * @param packet the oldest packet to be placed in packets
+         * @precondition packets.length > 1
+         */
+        pushFront: function(packet) {
+          this.packets[this.head--] = packet;
+          //convert -ve index to +ve mod the length of packets
+          this.head = (this.head + this.packets.length) % this.packets.length;
+          //allow overwrite of newest element if array is full
+          if (this.head === this.tail)
+            --this.tail;
+        },
+        /**
+         * inserts the newest packet at tail of packets array.
+         * if packets is full after insertion, the oldest packet is lost
+         *
+         * @param packet the newest packet to be placed in packets
+         * @precondition packets.length > 1
+         */
+        pushBack: function(packet) {
+          this.packets[this.tail++] = packet;
+          //wrap index around
+          this.tail %= this.packets.length;
+          //allow overwrite of oldest element if array is full
+          if (this.head === this.tail)
+            ++this.head;
+        },
+        /**
+         * iterates packets array sequentially from head to tail and returns
+         * an array containing a copy of all packets in order of head to tail.
+         *
+         * @return array with all packets in order
+         */
+        getInOrder: function() {
+          var packetsInOrder = [];
+          //get position of oldest element
+          var i = (this.head + 1) % this.packets.length;
+          while(i != this.tail) {
+            packetsInOrder.push(this.packets[i++]);
+            i %= this.packets.length;
+          }
+          return packetsInOrder;
+        }
+      },
       currState: {
-        node: "", //current node selected
-        channel: "", //current channel selected
-        value: "", //current value from curr node & channel
+        //current node selected
+        node: "",
+        //current channel selected
+        channel: "",
+        //current number of unsuccessful HTTP GETs
+        heartbeat: 0
+      },
+      //number of unsuccessful HTTP GETS before backend is assumed dead
+      heartbeatLimit: 3,
+      /**
+       * performs HTTP GET and returns data from server.
+       * @param pathQuery path including / and query required to locate resource
+       *   from server. e.g. /packets?node=10&ch=12
+       */
+      getData: function(pathQuery) {
+        var url = "http://"+this.domain+":"+this.port+pathQuery;
+        console.log("request: " + url);
+        return $http.get(url).then(
+          function(response) {
+            //on successful GET return data
+            console.log(response.status + " " + response.statusText);
+            return response.data;
+          },
+          function(response) {
+            //on unsuccessful GET return null
+            console.log(response.status + " " + response.statusText);
+            return null;
+          }
+        );
       }
     };
   });
-  //controller to handle interactive graph
-  app.controller("graphCtrl", ["$log", "$scope", "_data",
-      function($log, $scope, _data) {
-      //TODO
-  }]);
-  //controller to handle current channel value
-  app.controller("valueCtrl", ["$log", "$scope", "$http", "$interval", "_data",
-      function($log, $scope, $http, $interval, _data) {
-    $scope.value = _data.currState.value;
+  
+  /**
+   * using the selected node and channel:
+   * -retrieve the most recent data packets from server (max 1000)
+   * -display data as a graph
+   * -display most recent value from server in the channel value section, to be
+   *  updated every second
+   */
+  app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
+      function($scope, $http, $interval, _data) {
     var valueTask;
     //start process of retrieving channel values
     var init = function() {
       //don't start new task if already started
       if (angular.isDefined(valueTask)) return;
 
-      //start task to call getValue every second
+      //start task to get realtime value every second
       valueTask = $interval(function() {
-        //get current channel value
-        var request = _data.domain + ":" + _data.port + "?node=" +
-            _data.currState.node + "&ch=" + _data.currState.channel;
-        var response = "";
-        /*
-        $http.get().success(function(response) {
-          $scope.nodes = response;
-        });*/
-        $log.log("request:" + request + "\tresponse:" + response);
-        _data.currState.value = request;//TODO change to response
-        $scope.value = _data.currState.value;
+        //check if node and channel have been selected and only attempt
+        //to retrieve value if both are selected
+        if (_data.currState.node === "" || _data.currState.channel === "") {
+          console.error("node or channel not selected");
+        } else {
+          var url = "http://"+_data.domain+":"+_data.port+"/nodes/"+_data.currState.node+"/channel/"+_data.currState.channel+".json";
+          //TODO change to this url for production
+          //var url = "http://" + _data.domain + ":" + _data.port + "?node=" +
+          //    _data.currState.node + "&ch=" + _data.currState.channel;
+          console.log("valueCtrl request: " + url);
+          $http.get(url).
+            //on successful GET update _data.value and $scope.value and
+            //reset _data.currState.hearbeat incase it was incremented
+            //previously due to packet loss(es)
+            success(function(data, status) {
+              console.log(status);
+              console.log(data);
+              _data.currState.heartbeat = 0;
+              //set live channel reading
+              $scope.value = data[data.length - 1].data;
+              $scope.timestamp = data[data.length - 1].time;
+              //set graph TODO
+              $scope.values = data;
+            }).
+            //on unsuccessful GET, increment heartbeat and replace
+            //_data.currState.value and $scope.value with an error message
+            //if heartbeat limit is reached
+            error(function(data, status) {
+              console.log(status);
+              console.log(data);
+              ++_data.currState.heartbeat;
+              if (_data.currState.heartbeat > _data.heartbeatLimit - 1) {
+                $scope.value = "Scandalous has been unreachable for " +
+                    _data.currState.heartbeat + "s";
+              }
+            });
+        }
       }, 1000);
     };
     init();
   }]);
-  //controller to handle channel selection
-  app.controller("channelCtrl", ["$log", "$scope", "$interval", "_data",
-      function($log, $scope, $interval, _data) {
-    $scope.channels = _data.channels;
-    //returns true if channel is selected, false otherwise
-    $scope.isSelected = function(channel) {
-      return _data.currState.channel === channel;
-    };
-    //sets current channel in _data to the given channel
-    $scope.setSelected = function(channel) {
-      _data.currState.channel = channel;
-      $log.log("selected channel: " + _data.currState.channel);
-    };
-    var channelTask;
-    var init = function() {
-      //don't start new task if already started
-      if (angular.isDefined(channelTask)) return;
 
-      //start task to get nodes every second
-      channelTask = $interval(function() {
-        var url = _data.domain + ":" + _data.port + "/nodes/" +
-            _data.currState.channel + "/channel";
-        $log.log(url);
-      }, 1000);
-    };
-    init();
-  }]);
-
-  //controller to handle node selection
-  app.controller("nodeCtrl", ["$log", "$scope", "$http", "$interval", "_data",
-      function($log, $scope, $http, $interval, _data) {
-    $scope.nodes = _data.nodes;
+  /*
+   * controller used to handle node and channel selection
+   */
+  app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
+      function($scope, $http, $interval, _data) {
     //returns true if node is selected, false otherwise
-    $scope.isSelected = function(node) {
-      return _data.currState.node === node;
+    $scope.isSelected = function(isNode, value) {
+      if (isNode) {
+        return _data.currState.node === value;
+      } else {
+        return _data.currState.channel === value;
+      }
     };
     //sets current node in _data to the given node
-    $scope.setSelected = function(node) {
-      _data.currState.node = node;
-      $log.log("selected node: " + _data.currState.node);
+    $scope.setSelected = function(isNode, value) {
+      if (isNode) {
+        _data.currState.node = value;
+        $scope.getChannels();
+      } else {
+        _data.currState.channel = value;
+      }
     };
-    var nodeTask;
+    $scope.getNodes = function() {
+      //attempt to get all nodes
+      _data.getData("/example_nodes.json").then(function(nodes) {
+        $scope.nodes = nodes;
+      });
+    };
+    $scope.getChannels = function() {
+      _data.getData("/nodes/"+_data.currState.node+"/example_channels.json").
+          then(function(channels) {
+        $scope.channels = channels;
+      });
+    };
     var init = function() {
-      //don't start new task if already started
-      if (angular.isDefined(nodeTask)) return;
-
-      //start task to get nodes every second
-      nodeTask = $interval(function() {
-        var url = _data.domain + ":" + _data.port + "/nodes";
-        $log.log(url);
-      }, 1000);
+      $scope.getNodes();
     };
     init();
   }]);
 
-  //controller to set/get domain of scandalous backend
-  app.controller("domainCtrl", ["$log", "$scope", "_data",
-      function($log, $scope, _data) {
+  /*
+   * controller used to set/get domain of scandalous backend
+   */
+  app.controller("domainCtrl", ["$scope", "_data",
+      function($scope, _data) {
     $scope.domain = _data.domain;
     //sets domain of backend in _data to given domain
     $scope.setDomain = function(domain) {
       _data.domain = domain;
-      $log.log("domain changed to " + _data.domain);
+      console.log("domain changed to " + _data.domain);
     };
   }]);
 
-  //controller to get/set port of scandalous backend
-  app.controller("portCtrl", ["$log", "$scope", "_data",
-      function($log, $scope, _data) {
+  /*
+   * controller used to get/set port of scandalous backend
+   */
+  app.controller("portCtrl", ["$scope", "_data",
+      function($scope, _data) {
     $scope.port = _data.port;
     //sets port of backend in _data to given port
     $scope.setPort = function(port) {
       _data.port = port;
-      $log.log("port changed to " + _data.port);
+      console.log("port changed to " + _data.port);
     };
   }]);
 
