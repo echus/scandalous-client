@@ -1,9 +1,0 @@
-#channels {
-  max-height: 150px;
-  overflow-y: scroll;
-}
-
-#nodes {
-  max-height: 250px;
-  overflow-y: scroll;
-}

@@ -1,0 +1,25 @@
+#channels {
+  max-height: 150px;
+  overflow-y: scroll;
+}
+
+#nodes {
+  max-height: 250px;
+  overflow-y: scroll;
+}
+#chart-cont {
+  max-width: 600px;
+  overflow-x: scroll;
+}
+
+#value-display {
+  font-size: 3em;
+}
+#value-timestamp {
+  font-size: 1.5em;
+}
+
+.panel-title {
+  font-size: 1.3em;
+  text-align: center;
+}
