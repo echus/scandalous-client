@@ -1,11 +1,11 @@
-var app = angular.module("myApp", []);
+var app = angular.module("myApp", ["nvd3"]);
 
 app.factory("_data", function($http) {
   return {
     //default domain of scandalous backend
-    domain: "127.1.1.1",
+    domain: "0.0.0.0",
     //default port of scadalous backend
-    port: "8000",
+    port: "8080",
     //all available nodes
     nodes: [],
     //all available channels
@@ -135,7 +135,7 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
               value : values[values.length - 1].time,
               style : "text-center"
           };
-          setChart(values);
+          //setChart(values);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -158,59 +158,147 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
   (function() {
     //start task to get realtime value every second
     $interval($scope.getValues, 1000);
-    $scope.chart = c3.generate({
-        bindto: "#chart",
-        data: {
-            json: [
-                {
-                  "pkt_id": 21,
-                  "priority": 7,
-                  "MSG_type": 0,
-                  "time": "2014-12-20T07:36:41",
-                  "node": 50,
-                  "channel": 3,
-                  "data": 12
-                },
-                {
-                  "pkt_id": 22,
-                  "priority": 7,
-                  "MSG_type": 0,
-                  "time": "2014-12-20T08:36:41",
-                  "node": 50,
-                  "channel": 3,
-                  "data": 11
-                },
-                {
-                  "pkt_id": 23,
-                  "priority": 7,
-                  "MSG_type": 0,
-                  "time": "2014-12-20T09:36:41",
-                  "node": 50,
-                  "channel": 3,
-                  "data": 10
-                }
-            ],
-            keys: {
-                x: "time",
-                value: ["data"]
-            }
+    $scope.options = {
+      chart: {
+        type: 'lineWithFocusChart',
+        height: 450,
+        margin : {
+          top: 20,
+          right: 20,
+          bottom: 60,
+          left: 40
         },
-        axis: {
-            x: {
-                label: "Time",
-                type: "category"
-            },
-            y: {
-                label: "Value"
-            }
+        transitionDuration: 500,
+        xAxis: {
+          axisLabel: 'X Axis',
+          tickFormat: function(d){
+            //console.log("xaxis "+d);
+            //return d3.time.format("%X")(new Date(d.time));
+            return d3.format(',f')(d);
+          }
         },
-        legend: {
-            hide: true
+        x2Axis: {
+          tickFormat: function(d){
+            //console.log("x2axis "+d);
+            //return d.time;
+            return d3.format(',f')(d);
+          }
         },
-        size: {
-            width: 1200,
+        yAxis: {
+          axisLabel: 'Y Axis',
+          tickFormat: function(d){
+            //console.log("yaxis "+d);
+            //return d.data;
+            return d3.format(',.2f')(d);
+          },
+          rotateYLabel: false
+        },
+        y2Axis: {
+          tickFormat: function(d){
+            //console.log("y2axis "+d);
+            //return d.data;
+            return d3.format(',.2f')(d);
+          }
         }
-    });
+      }
+    };
+    $scope.data = [{
+      key: "Key",
+      values: [
+        {
+          "pkt_id": 24,
+          "priority": 7,
+          "MSG_type": 0,
+          "time": "2014-12-20T10:36:41",
+          "node": 50,
+          "channel": 3,
+          "data": 9
+        },
+        {
+          "pkt_id": 25,
+          "priority": 7,
+          "MSG_type": 0,
+          "time": "2014-12-20T11:36:41",
+          "node": 50,
+          "channel": 3,
+          "data": 8
+        },
+        {
+          "pkt_id": 26,
+          "priority": 7,
+          "MSG_type": 0,
+          "time": "2014-12-20T12:36:41",
+          "node": 50,
+          "channel": 3,
+          "data": 7
+        },
+        {
+          "pkt_id": 27,
+          "priority": 7,
+          "MSG_type": 0,
+          "time": "2014-12-20T13:36:41",
+          "node": 50,
+          "channel": 3,
+          "data": 6
+        },
+        {
+          "pkt_id": 28,
+          "priority": 7,
+          "MSG_type": 0,
+          "time": "2014-12-20T14:36:41",
+          "node": 50,
+          "channel": 3,
+          "data": 5
+        }
+      ]
+    }];
+        $scope.data = generateData();
+
+        /* Random Data Generator (took from nvd3.org) */
+        function generateData() {
+            var x = stream_layers(3,10+Math.random()*200,.1).map(function(data, i) {
+                return {
+                    key: 'Stream' + i,
+                    values: data
+                };
+            });
+            console.log(x);
+            return x;
+        }
+
+        /* Inspired by Lee Byron's test data generator. */
+        function stream_layers(n, m, o) {
+            if (arguments.length < 3) o = 0;
+            function bump(a) {
+                var x = 1 / (.1 + Math.random()),
+                    y = 2 * Math.random() - .5,
+                    z = 10 / (.1 + Math.random());
+                for (var i = 0; i < m; i++) {
+                    var w = (i / m - y) * z;
+                    a[i] += x * Math.exp(-w * w);
+                }
+            }
+            return d3.range(n).map(function() {
+                var a = [], i;
+                for (i = 0; i < m; i++) a[i] = o + o * Math.random();
+                for (i = 0; i < 5; i++) bump(a);
+                return a.map(stream_index);
+            });
+        }
+
+        /* Another layer generator using gamma distributions. */
+        function stream_waves(n, m) {
+            return d3.range(n).map(function(i) {
+                return d3.range(m).map(function(j) {
+                    var x = 20 * j / m - i / 3;
+                    return 2 * x * Math.exp(-.5 * x);
+                }).map(stream_index);
+            });
+        }
+
+        function stream_index(d, i) {
+            return {x: i, y: Math.max(0, d)};
+        }
   })();
 }]);
 

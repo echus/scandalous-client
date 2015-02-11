@@ -21,12 +21,13 @@
   <!-- angular -->
   <script src="js/angular.min.js"></script>
 
-  <!-- load c3.css -->
-  <link href="js/c3-0.4.9/c3.css" rel="stylesheet" type="text/css"/>
-
-  <!-- load d3.js before c3.js since c3 depends on d3 -->
+  <!-- load d3 -->
   <script src="js/d3/d3.js"></script>
-  <script src="js/c3-0.4.9/c3.js"></script>
+
+  <!-- load angular nvd3 -->
+  <script src="js/angular-nvd3-0.0.9/lib/nv.d3.js"></script>
+  <script src="js/angular-nvd3-0.0.9/dist/angular-nvd3.js"></script>
+  <link rel="stylesheet" href="js/angular-nvd3-0.0.9/lib/nv.d3.css"/>
 
   <!-- additional CSS -->
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
@@ -60,8 +61,8 @@
               <div class="panel-heading">
                 <div class="panel-title">Interactive Chart</div>
               </div>
-              <div class="panel-body" id="chart-cont">
-                <div id="chart"></div>
+              <div class="panel-body">
+                <nvd3 options="options" data="data"></nvd3>
               </div><!-- /.panel-body -->
             </div><!-- /.panel panel-default -->
           </div><!-- /.col-md-8 -->
