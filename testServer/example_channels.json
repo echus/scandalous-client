@@ -1,0 +1,9 @@
+[
+  {"channel": 0, "value": "CURRENT"},
+  {"channel": 1, "value": "VOLTAGE"},
+  {"channel": 2, "value": "POWER"},
+  {"channel": 3, "value": "INTEGRATED CURRENT"},
+  {"channel": 4, "value": "INTEGRATED POWER"},
+  {"channel": 5, "value": "SAMPLES"},
+  {"channel": 6, "value": "RESET INTEGRATION"}
+]

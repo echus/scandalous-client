@@ -67,9 +67,15 @@ app.factory("_data", function($http) {
     },
     currState: {
       //current node selected
-      node: "",
+      node: {
+        node: "1",
+        device: "motor"
+      },
       //current channel selected
-      channel: "",
+      channel: {
+        channel: "2",
+        value: "current"
+      },
       //current number of unsuccessful HTTP GETs
       heartbeat: 0
     },
@@ -108,7 +114,8 @@ app.factory("_data", function($http) {
  */
 app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
     function($scope, $http, $interval, _data) {
-  $scope.getUnit = function(channel) {
+  $scope.getUnit = function() {
+    var channel = _data.currState.channel.value;
     if (channel.search(/current/i) !== -1) {
       return "A";
     } else if (channel.search(/voltage/i) !== -1) {
@@ -121,21 +128,21 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
   }
   $scope.getValues = function() {
     if (_data.currState.node !== "" && _data.currState.channel !== "") {
-      var url = "/nodes/"+_data.currState.node.node+"/channel/"+_data.currState.channel.channel+".json";
-      //var url = "/packets?node="+_data.currState.node.node+"&ch="+_data.currState.channel.channel;
+      //var url = "/nodes/"+_data.currState.node.node+"/channel/"+_data.currState.channel.channel+".json";
+      var url = "/packets?node="+_data.currState.node.node+"&ch="+_data.currState.channel.channel;
       _data.getData(url).then(function(values) {
         if (values !== null) {
           _data.currState.heartbeat = 0;
           $scope.value = {
-              value : values[values.length - 1].data,
-              unit : $scope.getUnit(_data.currState.channel.value)
+            value : values[values.length - 1].data,
+            unit : $scope.getUnit()
           };
 
           $scope.timestamp = {
-              value : values[values.length - 1].time,
-              style : "text-center"
+            value : values[values.length - 1].time,
+            style : "text-center"
           };
-          //setChart(values);
+          setChart(values);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -146,13 +153,18 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
     }
   };
   function setChart(packets) {
-    $scope.chart.load({
-        json: packets,
-        keys: {
-            x: "time",
-            value: ["data"]
-        }
-    });
+    $scope.data[0].key = _data.currState.node.device;
+    var values = [];
+    var timeOffset = new Date().getTimezoneOffset() * 60000;
+    for (var i = 0; i < packets.length; ++i) {
+      console.log("data: "+packets[i].data);
+      var parsedTime = new Date(packets[i].time);
+      values.push({
+        x: parsedTime.getTime() + timeOffset,
+        y: packets[i].data
+      });
+    }
+    $scope.data[0].values = values;
   }
   //start process of retrieving channel values
   (function() {
@@ -170,135 +182,67 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
         },
         transitionDuration: 500,
         xAxis: {
-          axisLabel: 'X Axis',
+          axisLabel: 'Time',
           tickFormat: function(d){
-            //console.log("xaxis "+d);
-            //return d3.time.format("%X")(new Date(d.time));
-            return d3.format(',f')(d);
+            return d3.time.format("%X")(new Date(d));
           }
         },
         x2Axis: {
           tickFormat: function(d){
-            //console.log("x2axis "+d);
-            //return d.time;
-            return d3.format(',f')(d);
+            return d3.time.format("%X")(new Date(d));
           }
         },
         yAxis: {
-          axisLabel: 'Y Axis',
+          axisLabel: $scope.getUnit(),
           tickFormat: function(d){
-            //console.log("yaxis "+d);
-            //return d.data;
             return d3.format(',.2f')(d);
           },
           rotateYLabel: false
         },
         y2Axis: {
           tickFormat: function(d){
-            //console.log("y2axis "+d);
-            //return d.data;
             return d3.format(',.2f')(d);
           }
         }
       }
     };
-    $scope.data = [{
-      key: "Key",
-      values: [
+  $scope.data = [{
+    key: _data.currState.node.device,
+    values: [
         {
-          "pkt_id": 24,
-          "priority": 7,
-          "MSG_type": 0,
-          "time": "2014-12-20T10:36:41",
-          "node": 50,
-          "channel": 3,
-          "data": 9
+          x: 1136005200000,
+          y: 12
         },
         {
-          "pkt_id": 25,
-          "priority": 7,
-          "MSG_type": 0,
-          "time": "2014-12-20T11:36:41",
-          "node": 50,
-          "channel": 3,
-          "data": 8
-        },
+          x: 1138683600000,
+          y: 11
+        },  
         {
-          "pkt_id": 26,
-          "priority": 7,
-          "MSG_type": 0,
-          "time": "2014-12-20T12:36:41",
-          "node": 50,
-          "channel": 3,
-          "data": 7
-        },
+          x: 1141102800000,
+          y: 10
+        },  
         {
-          "pkt_id": 27,
-          "priority": 7,
-          "MSG_type": 0,
-          "time": "2014-12-20T13:36:41",
-          "node": 50,
-          "channel": 3,
-          "data": 6
-        },
-        {
-          "pkt_id": 28,
-          "priority": 7,
-          "MSG_type": 0,
-          "time": "2014-12-20T14:36:41",
-          "node": 50,
-          "channel": 3,
-          "data": 5
-        }
-      ]
-    }];
-        $scope.data = generateData();
-
-        /* Random Data Generator (took from nvd3.org) */
-        function generateData() {
-            var x = stream_layers(3,10+Math.random()*200,.1).map(function(data, i) {
-                return {
-                    key: 'Stream' + i,
-                    values: data
-                };
-            });
-            console.log(x);
-            return x;
-        }
-
-        /* Inspired by Lee Byron's test data generator. */
-        function stream_layers(n, m, o) {
-            if (arguments.length < 3) o = 0;
-            function bump(a) {
-                var x = 1 / (.1 + Math.random()),
-                    y = 2 * Math.random() - .5,
-                    z = 10 / (.1 + Math.random());
-                for (var i = 0; i < m; i++) {
-                    var w = (i / m - y) * z;
-                    a[i] += x * Math.exp(-w * w);
-                }
-            }
-            return d3.range(n).map(function() {
-                var a = [], i;
-                for (i = 0; i < m; i++) a[i] = o + o * Math.random();
-                for (i = 0; i < 5; i++) bump(a);
-                return a.map(stream_index);
-            });
-        }
-
-        /* Another layer generator using gamma distributions. */
-        function stream_waves(n, m) {
-            return d3.range(n).map(function(i) {
-                return d3.range(m).map(function(j) {
-                    var x = 20 * j / m - i / 3;
-                    return 2 * x * Math.exp(-.5 * x);
-                }).map(stream_index);
-            });
-        }
-
-        function stream_index(d, i) {
-            return {x: i, y: Math.max(0, d)};
-        }
+          x: 1143781200000,
+          y: 9
+        },  
+        {   
+          x: 1146369600000,
+          y: 8
+        },  
+        {   
+          x: 1149048000000,
+          y: 7
+        },  
+        {   
+          x: 1151640000000,
+          y: 6
+        },  
+        {   
+          x: 1154318400000,
+          y: 5
+        }   
+    ]   
+  }];
   })();
 }]);
 
@@ -326,8 +270,8 @@ app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
   };
   $scope.getNodes = function() {
     //attempt to get all nodes
-    var url = "/example_nodes.json";
-    //var url = "/nodes";
+    //var url = "/example_nodes.json";
+    var url = "/nodes";
     _data.getData(url).then(function(nodes) {
       $scope.nodes = nodes;
       //clear selections and cached channels on node refresh
@@ -337,8 +281,8 @@ app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
     });
   };
   $scope.getChannels = function() {
-    var url = "/nodes/"+_data.currState.node.node+"/example_channels.json";
-    //var url = "/node/"+_data.currState.node.node+"/channels";
+    //var url = "/nodes/"+_data.currState.node.node+"/example_channels.json";
+    var url = "/node/"+_data.currState.node.node+"/channels";
     _data.getData(url).
         then(function(channels) {
       $scope.channels = channels;
