@@ -1,4 +1,4 @@
-var app = angular.module("myApp", ["nvd3"]);
+var app = angular.module("myApp", ["chart.js"]);
 
 app.factory("_data", function($http) {
   return {
@@ -112,8 +112,8 @@ app.factory("_data", function($http) {
  * -display most recent value from server in the channel value section, to be
  *  updated every second
  */
-app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
-    function($scope, $http, $interval, _data) {
+app.controller("valuesCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
+    function($scope, $http, $interval, $timeout, _data) {
   $scope.getUnit = function() {
     var channel = _data.currState.channel.value;
     if (channel.search(/current/i) !== -1) {
@@ -142,7 +142,8 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
             value : values[values.length - 1].time,
             style : "text-center"
           };
-          setChart(values);
+          //update chart
+          //setChart(values);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -153,96 +154,28 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "_data",
     }
   };
   function setChart(packets) {
-    $scope.data[0].key = _data.currState.node.device;
-    var values = [];
-    var timeOffset = new Date().getTimezoneOffset() * 60000;
-    for (var i = 0; i < packets.length; ++i) {
-      console.log("data: "+packets[i].data);
-      var parsedTime = new Date(packets[i].time);
-      values.push({
-        x: parsedTime.getTime() + timeOffset,
-        y: packets[i].data
-      });
-    }
-    $scope.data[0].values = values;
+    $scope.labels.push("a");
+    $scope.data[0].push(Math.random()*10);
   }
   //start process of retrieving channel values
   (function() {
     //start task to get realtime value every second
     $interval($scope.getValues, 1000);
-    $scope.options = {
-      chart: {
-        type: 'lineWithFocusChart',
-        height: 450,
-        margin : {
-          top: 20,
-          right: 20,
-          bottom: 60,
-          left: 40
-        },
-        transitionDuration: 500,
-        xAxis: {
-          axisLabel: 'Time',
-          tickFormat: function(d){
-            return d3.time.format("%X")(new Date(d));
-          }
-        },
-        x2Axis: {
-          tickFormat: function(d){
-            return d3.time.format("%X")(new Date(d));
-          }
-        },
-        yAxis: {
-          axisLabel: $scope.getUnit(),
-          tickFormat: function(d){
-            return d3.format(',.2f')(d);
-          },
-          rotateYLabel: false
-        },
-        y2Axis: {
-          tickFormat: function(d){
-            return d3.format(',.2f')(d);
-          }
-        }
-      }
+    //draw chart
+    $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
+    $scope.series = ['Series A'];
+    $scope.data = [
+      [65, 59, 80, 81, 56, 55, 40],
+    ];
+    $scope.onClick = function (points, evt) {
+      console.log(points, evt);
     };
-  $scope.data = [{
-    key: _data.currState.node.device,
-    values: [
-        {
-          x: 1136005200000,
-          y: 12
-        },
-        {
-          x: 1138683600000,
-          y: 11
-        },  
-        {
-          x: 1141102800000,
-          y: 10
-        },  
-        {
-          x: 1143781200000,
-          y: 9
-        },  
-        {   
-          x: 1146369600000,
-          y: 8
-        },  
-        {   
-          x: 1149048000000,
-          y: 7
-        },  
-        {   
-          x: 1151640000000,
-          y: 6
-        },  
-        {   
-          x: 1154318400000,
-          y: 5
-        }   
-    ]   
-  }];
+    $timeout(function () {
+      $scope.data = [
+        [28, 48, 40, 19, 86, 27, 90],
+        [65, 59, 80, 81, 56, 55, 40]
+      ];
+    }, 3000);
   })();
 }]);
 
