@@ -21,18 +21,9 @@
   <!-- angular -->
   <script src="js/angular.min.js"></script>
 
-  <!-- chart.js -->
-  <script src="js/Chart.js-master/Chart.min.js"></script>
-  <script src="js/angular-chart.js/angular-chart.js"></script>
-  <link rel="stylesheet" href="js/angular-chart.js/angular-chart.css">
-
-  <!-- load d3 -->
-  <script src="js/d3/d3.js"></script>
-
-  <!-- load angular nvd3 -->
-  <script src="js/angular-nvd3-0.0.9/lib/nv.d3.js"></script>
-  <script src="js/angular-nvd3-0.0.9/dist/angular-nvd3.js"></script>
-  <link rel="stylesheet" href="js/angular-nvd3-0.0.9/lib/nv.d3.css"/>
+  <!-- highcharts -->
+  <script src="js/Highcharts-4.1.1/js/highcharts.js"></script>
+  <script src="js/Highcharts-4.1.1/js/modules/exporting.js"></script>
 
   <!-- additional CSS -->
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
@@ -44,9 +35,9 @@
         <img src="img/banner.png" class="img-responsive center-block" alt="Scandalous banner"/>
       </div>
       <div class="panel-body">
-        <div class="row">
+        <div class="row" ng-controller="mainCtrl">
           <!-- chart + live channel value -->
-          <div class="col-md-8" ng-controller="valuesCtrl">
+          <div class="col-md-8">
             <!-- live channel value -->
             <div class="panel panel-default">
               <div class="panel-heading">
@@ -67,15 +58,13 @@
                 <div class="panel-title">Interactive Chart</div>
               </div>
               <div class="panel-body">
-                <canvas id="line" class="chart chart-line" data="data"
-                  labels="labels" legend="true" series="series" click="onClick">
-                </canvas> 
-                <!-- <nvd3 options="options" data="data"></nvd3> -->
+                <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">
+                </div>
               </div><!-- /.panel-body -->
             </div><!-- /.panel panel-default -->
           </div><!-- /.col-md-8 -->
           <!-- selectable nodes and channels -->
-          <div class="col-md-4" ng-controller="selectionCtrl">
+          <div class="col-md-4">
             <!-- nodes -->
             <div class="panel panel-default">
               <div class="panel-heading">

@@ -1,4 +1,4 @@
-var app = angular.module("myApp", ["chart.js"]);
+var app = angular.module("myApp", []);
 
 app.factory("_data", function($http) {
   return {
@@ -6,10 +6,6 @@ app.factory("_data", function($http) {
     domain: "0.0.0.0",
     //default port of scadalous backend
     port: "8080",
-    //all available nodes
-    nodes: [],
-    //all available channels
-    channels: [],
     //data samples from server corresponding to selected node and channel
     values: {
       //packets from server stored in a circular array of predefined size
@@ -112,7 +108,7 @@ app.factory("_data", function($http) {
  * -display most recent value from server in the channel value section, to be
  *  updated every second
  */
-app.controller("valuesCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
+app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     function($scope, $http, $interval, $timeout, _data) {
   $scope.getUnit = function() {
     var channel = _data.currState.channel.value;
@@ -142,8 +138,6 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "$timeout", "_data
             value : values[values.length - 1].time,
             style : "text-center"
           };
-          //update chart
-          //setChart(values);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -154,36 +148,75 @@ app.controller("valuesCtrl", ["$scope", "$http", "$interval", "$timeout", "_data
     }
   };
   function setChart(packets) {
-    $scope.labels.push("a");
-    $scope.data[0].push(Math.random()*10);
-  }
-  //start process of retrieving channel values
-  (function() {
-    //start task to get realtime value every second
-    $interval($scope.getValues, 1000);
-    //draw chart
-    $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
-    $scope.series = ['Series A'];
-    $scope.data = [
-      [65, 59, 80, 81, 56, 55, 40],
-    ];
-    $scope.onClick = function (points, evt) {
-      console.log(points, evt);
-    };
-    $timeout(function () {
-      $scope.data = [
-        [28, 48, 40, 19, 86, 27, 90],
-        [65, 59, 80, 81, 56, 55, 40]
-      ];
-    }, 3000);
-  })();
-}]);
+          $('#container').highcharts({
+              chart: {
+                  type: 'spline',
+                  animation: Highcharts.svg, // don't animate in old IE
+                  marginRight: 10,
+                  events: {
+                      load: function () {
 
-/*
- * controller used to handle node and channel selection
- */
-app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
-    function($scope, $http, $interval, _data) {
+                          // set up the updating of the chart each second
+                          var series = this.series[0];
+                          clearInterval($scope.intervalID);
+                          $scope.intervalID = setInterval(function () {
+                              var x = (new Date($scope.timestamp.value)).getTime(),
+                                  y = $scope.value.value;
+                              series.addPoint([x, y], true, true);
+                          }, 1000);
+                      }
+                  }
+              },
+              title: {
+                  text: _data.currState.node.device
+              },
+              xAxis: {
+                  type: 'datetime',
+                  tickPixelInterval: 150
+              },
+              yAxis: {
+                  title: {
+                      text: $scope.getUnit()
+                  },
+                  plotLines: [{
+                      value: 0,
+                      width: 1,
+                      color: '#808080'
+                  }]
+              },
+              tooltip: {
+                  formatter: function () {
+                      return '<b>' + 
+                          Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                          Highcharts.numberFormat(this.y, 2);
+                  }
+              },
+              legend: {
+                  enabled: false
+              },
+              exporting: {
+                  enabled: false
+              },
+              series: [{
+                  //name: 'Random data',
+                  data: (function () {
+                      // generate an array of random data
+                      var data = [],
+                          time = (new Date()).getTime() -
+                              new Date().getTimezoneOffset()*60000,
+                          i;
+
+                      for (i = -19; i <= 0; i += 1) {
+                          data.push({
+                              x: time + i * 1000,
+                              y: 0
+                          });
+                      }
+                      return data;
+                  }())
+              }]
+          });
+  }
   //returns true if node is selected, false otherwise
   $scope.isSelected = function(isNode, value) {
     if (isNode) {
@@ -196,9 +229,11 @@ app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
   $scope.setSelected = function(isNode, value) {
     if (isNode) {
       _data.currState.node = value;
+      _data.currState.channel = "";
       $scope.getChannels();
     } else {
       _data.currState.channel = value;
+      setChart();
     }
   };
   $scope.getNodes = function() {
@@ -223,7 +258,10 @@ app.controller("selectionCtrl", ["$scope", "$http", "$interval", "_data",
   };
   //init
   (function() {
+    //get all nodes
     $scope.getNodes();
+    //start task to get realtime value every second
+    $interval($scope.getValues, 1000);
   })();
 }]);
 
