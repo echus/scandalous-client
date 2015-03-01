@@ -130,14 +130,16 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
         if (values !== null) {
           _data.currState.heartbeat = 0;
           $scope.value = {
-            value : values[values.length - 1].data,
+            value : values[0].data,
             unit : $scope.getUnit()
           };
 
           $scope.timestamp = {
-            value : values[values.length - 1].time,
+            value : values[0].time,
             style : "text-center"
           };
+          //update chart
+          setChart(values);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -148,74 +150,29 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     }
   };
   function setChart(packets) {
-          $('#container').highcharts({
-              chart: {
-                  type: 'spline',
-                  animation: Highcharts.svg, // don't animate in old IE
-                  marginRight: 10,
-                  events: {
-                      load: function () {
-
-                          // set up the updating of the chart each second
-                          var series = this.series[0];
-                          clearInterval($scope.intervalID);
-                          $scope.intervalID = setInterval(function () {
-                              var x = (new Date($scope.timestamp.value)).getTime(),
-                                  y = $scope.value.value;
-                              series.addPoint([x, y], true, true);
-                          }, 1000);
-                      }
-                  }
-              },
-              title: {
-                  text: _data.currState.node.device
-              },
-              xAxis: {
-                  type: 'datetime',
-                  tickPixelInterval: 150
-              },
-              yAxis: {
-                  title: {
-                      text: $scope.getUnit()
-                  },
-                  plotLines: [{
-                      value: 0,
-                      width: 1,
-                      color: '#808080'
-                  }]
-              },
-              tooltip: {
-                  formatter: function () {
-                      return '<b>' + 
-                          Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-                          Highcharts.numberFormat(this.y, 2);
-                  }
-              },
-              legend: {
-                  enabled: false
-              },
-              exporting: {
-                  enabled: false
-              },
-              series: [{
-                  //name: 'Random data',
-                  data: (function () {
-                      // generate an array of random data
-                      var data = [],
-                          time = (new Date()).getTime() -
-                              new Date().getTimezoneOffset()*60000,
-                          i;
-
-                      for (i = -19; i <= 0; i += 1) {
-                          data.push({
-                              x: time + i * 1000,
-                              y: 0
-                          });
-                      }
-                      return data;
-                  }())
-              }]
-          });
+    console.log($scope.chart.data);
+    //var time = ["x"];
+    //var data = ["data1"];
+    //for (var i = 0; i < 5; ++i) {
+      var x = Math.round(Math.random()*10);
+      //data.push(x);
+      $scope.chart.data.columns[1].push(x);
+      //time.push(new Date().valueOf() + (i*1000));
+      $scope.chart.data.columns[0].push(x);
+    //}
+    $scope.chart.data = {
+      columns: [
+        $scope.chart.data.columns[0],
+        $scope.chart.data.columns[1]
+      ],
+      axes: {
+        data: 'y',
+      },
+      unload: true,
+      names: {
+        data: "data1",
+      }
+    };
   }
   //returns true if node is selected, false otherwise
   $scope.isSelected = function(isNode, value) {
@@ -262,6 +219,42 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     $scope.getNodes();
     //start task to get realtime value every second
     $interval($scope.getValues, 1000);
+    //init chart
+    $scope.chart = {};
+    $scope.chart.data = {
+      type: "line",
+      x: "x",
+      columns: [
+        ["x", 0, 1],
+        ["data1", 0, 2]
+      ]
+    };
+    $scope.chart.axis = {
+      y: {
+        label: "y",
+        show: true,
+        tick: {
+          format: function(y) {
+            return y;
+          }
+        }
+      },
+      x: {
+        tick: {
+          format: function(x) {
+            //var date = new Date();
+            //return date;
+            return x;
+          },
+          culling: {
+            max: 5
+          }
+        }
+      }
+    };
+    $scope.chart.subchart = {
+      show: true
+    };
   })();
 }]);
 

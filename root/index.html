@@ -21,9 +21,12 @@
   <!-- angular -->
   <script src="js/angular.min.js"></script>
 
-  <!-- highcharts -->
-  <script src="js/Highcharts-4.1.1/js/highcharts.js"></script>
-  <script src="js/Highcharts-4.1.1/js/modules/exporting.js"></script>
+  <!-- load c3.css -->
+  <link href="js/c3-0.4.9/c3.css" rel="stylesheet" type="text/css"/>
+
+  <!-- load d3.js before c3.js since c3 depends on d3 -->
+  <script src="js/d3/d3.js"></script>
+  <script src="js/c3-0.4.9/c3.js"></script>
 
   <!-- additional CSS -->
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
@@ -58,8 +61,7 @@
                 <div class="panel-title">Interactive Chart</div>
               </div>
               <div class="panel-body">
-                <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">
-                </div>
+                <div xychart ng-model="chart" id="chart"></div>
               </div><!-- /.panel-body -->
             </div><!-- /.panel panel-default -->
           </div><!-- /.col-md-8 -->
@@ -124,5 +126,6 @@
   </div><!-- /.container -->
   <!-- javascript application and controllers -->
   <script src="js/app.js"></script>
+  <script src="js/directives.js"></script>
 </body>
 </html>

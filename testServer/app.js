@@ -27,7 +27,7 @@ app.get("/packets", function(req, res) {
   var samples = 50;
   var timeOffset = new Date().getTimezoneOffset()*60000;
   var today = new Date().valueOf() - samples * 1000 - timeOffset;
-  for (var i = 0; i < samples; ++i) {
+  for (var i = samples - 1; i >= 0; --i) {
     var date = new Date(today + i * 1000).toISOString();
     date = date.substring(0, 19);
     packets[i] = {
