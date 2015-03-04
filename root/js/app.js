@@ -139,7 +139,8 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
             style : "text-center"
           };
           //update chart
-          setChart(values);
+          var temp = [values[0]];
+          setChart(temp);
         } else {
           ++_data.currState.heartbeat;
           if (_data.currState.heartbeat >= _data.heartbeatLimit) {
@@ -149,31 +150,6 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       });
     }
   };
-  function setChart(packets) {
-    console.log($scope.chart.data);
-    //var time = ["x"];
-    //var data = ["data1"];
-    //for (var i = 0; i < 5; ++i) {
-      var x = Math.round(Math.random()*10);
-      //data.push(x);
-      $scope.chart.data.columns[1].push(x);
-      //time.push(new Date().valueOf() + (i*1000));
-      $scope.chart.data.columns[0].push(x);
-    //}
-    $scope.chart.data = {
-      columns: [
-        $scope.chart.data.columns[0],
-        $scope.chart.data.columns[1]
-      ],
-      axes: {
-        data: 'y',
-      },
-      unload: true,
-      names: {
-        data: "data1",
-      }
-    };
-  }
   //returns true if node is selected, false otherwise
   $scope.isSelected = function(isNode, value) {
     if (isNode) {
@@ -213,6 +189,15 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       $scope.channels = channels;
     });
   };
+  function setChart(packets) {
+    $scope.chart.flow({
+      json: packets,
+      keys: {
+        x: "time",
+        value: ["data"]
+      }
+    });
+  }
   //init
   (function() {
     //get all nodes
@@ -220,41 +205,55 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     //start task to get realtime value every second
     $interval($scope.getValues, 1000);
     //init chart
-    $scope.chart = {};
-    $scope.chart.data = {
-      type: "line",
-      x: "x",
-      columns: [
-        ["x", 0, 1],
-        ["data1", 0, 2]
-      ]
-    };
-    $scope.chart.axis = {
-      y: {
-        label: "y",
-        show: true,
-        tick: {
-          format: function(y) {
-            return y;
+    $scope.chart = c3.generate({
+      bindto: "#chart",
+      data: {
+        json: [
+          {
+            "time": "2014-12-20T07:36:41",
+            "data": 12
+          },
+          {
+            "time": "2014-12-20T07:36:42",
+            "data": 13
+          },
+          {
+            "time": "2014-12-20T07:36:43",
+            "data": 14
+          },
+          {
+            "time": "2014-12-20T07:36:44",
+            "data": 15
+          },
+          {
+            "time": "2014-12-20T07:36:45",
+            "data": 16
           }
+        ],
+        keys: {
+          x: "time",
+          value: ["data"]
         }
       },
-      x: {
-        tick: {
-          format: function(x) {
-            //var date = new Date();
-            //return date;
-            return x;
-          },
-          culling: {
-            max: 5
+      axis: {
+        x: {
+          label: "Time",
+          type: "category",
+          tick: {
+            count: 10
           }
+        },
+        y: {
+          label: "Value"
         }
+      },
+      legend: {
+        hide: true
+      },
+      subchart: {
+        show: true
       }
-    };
-    $scope.chart.subchart = {
-      show: true
-    };
+    });
   })();
 }]);
 
