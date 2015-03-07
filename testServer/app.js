@@ -17,7 +17,7 @@ app.use(function(req, res, next) {
 app.get("/nodes", function(req, res) {
   res.send(fs.readFileSync(process.argv[4], {encoding:"utf8"}));
 });
-app.get("/node/[0-9]+/channels", function(req, res) {
+app.get("/nodes/[0-9]+/channels", function(req, res) {
   res.send(fs.readFileSync(process.argv[5], {encoding:"utf8"}));
 });
 var timeOffset = new Date().getTimezoneOffset()*60000;

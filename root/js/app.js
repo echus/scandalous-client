@@ -102,21 +102,21 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
    * @param isNode true is value is node, false if value is channel
    * @param value the node or channel value to be selected
    */
-  //sets current node in _data to the given node
   $scope.setSelected = function(isNode, value) {
     if (isNode) {
       currState.node = value;
+      //reset channel to no selection
       currState.channel = "";
       $scope.getChannels();
     } else {
       currState.channel = value;
-      //setChart();
     }
   };
+  /**
+   * Get all nodes from server
+   */
   $scope.getNodes = function() {
-    //attempt to get all nodes
-    //var url = "/example_nodes.json";
-    var url = "/nodes";
+    var url = "nodes";
     getData(url).then(function(nodes) {
       $scope.nodes = nodes;
       //clear selections and cached channels on node refresh
@@ -125,14 +125,17 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       $scope.channels = "";
     });
   };
+  /**
+   * Get all channels from server
+   */
   $scope.getChannels = function() {
-    //var url = "/nodes/"+currState.node.node+"/example_channels.json";
-    var url = "/node/"+currState.node.node+"/channels";
+    var url = "nodes/"+currState.node.node+"/channels";
     getData(url).
         then(function(channels) {
       $scope.channels = channels;
     });
   };
+  //init chart
   $scope.chart = {
     data: {
       type: "line",
@@ -188,7 +191,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
    *   from server. e.g. /packets?node=10&ch=12
    */
   function getData(pathQuery) {
-    var url = "http://"+_data.domain+":"+_data.port+pathQuery;
+    var url = "http://"+_data.domain+":"+_data.port+"/"+pathQuery;
     console.log("request: " + url);
     return $http.get(url).then(
       function(response) {
@@ -242,7 +245,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
   function getValues() {
     if (currState.node !== "" && currState.channel !== "") {
       //var url = "/nodes/"+currState.node.node+"/channel/"+currState.channel.channel+".json";
-      var url = "/packets?node="+currState.node.node+"&ch="+currState.channel.channel;
+      var url = "packets?node="+currState.node.node+"&ch="+currState.channel.channel;
       getData(url).then(function(allPackets) {
         //retrieve all packets and remove duplicates based on time
         var currPacketTime;
@@ -295,7 +298,6 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       packets: [],
       limit: 100
     };
-    //init chart
   })();
   var currState = {
     //current node selected
