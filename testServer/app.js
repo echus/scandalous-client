@@ -31,30 +31,6 @@ setInterval(function() {
   })
 }, 500);
 app.get("/packets", function(req, res) {
-  /*
-  var currTime = new Date().valueOf();
-  for (var i = currTime; i >= startTime; i -= 1000) {
-    packets.push({
-      time: new Date(i - timeOffset).toISOString().substring(0, 19),
-      data: parseFloat((Math.random() * 100).toFixed(2))
-    })
-    startTime = currTime;
-  }*/
-
-  /*
-  //var parsedUrl = url.parse(req.url, true, true);
-  //res.send(parsedUrl);
-  var packets = [];
-  var samples = 50;
-  for (var i = 0; i < samples; ++i) {
-    var date = new Date(today + i * 1000).toISOString();
-    date = date.substring(0, 19);
-    packets[samples - 1 - i] = {
-      time: date,
-      data: Math.random() * 100
-    }
-  }
-  */
   console.log();
   console.log(packets);
   console.log();

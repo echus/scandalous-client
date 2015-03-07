@@ -71,11 +71,7 @@ app.factory("_data", function($http) {
 });
 
 /**
- * using the selected node and channel:
- * -retrieve the most recent data packets from server (max 1000)
- * -display data as a graph
- * -display most recent value from server in the channel value section, to be
- *  updated every second
+ * 
  */
 app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     function($scope, $http, $interval, $timeout, _data) {
@@ -111,6 +107,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     } else {
       currState.channel = value;
     }
+    initChart();
   };
   /**
    * Get all nodes from server
@@ -135,60 +132,62 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       $scope.channels = channels;
     });
   };
-  //init chart
-  $scope.chart = {
-    data: {
-      type: "line",
-      x: "x",
-      columns: [
-        //["x", 0, 1],
-        //["data1", 0, 2]
-      ]
-    },
-    axis: {
-      y: {
-        //label: "y",
-        show: true,
-        tick: {
-          format: function(y) {
-            return y;
-          }
-        }
-      },
-      x: {
-        label: "Time",
-        tick: {
-          //show time as HH:MM:SS
-          format: function(x) {
-            return parseTime(x);
-          },
-          //set the number of ticks to be shown, default 10
-          culling: {
-            //max: 5
-          }
-        }
-      }
-    },
-    subchart: {
-      show: true
-    },
-    legend: {
-      show: false
-    },
-    transition: {
-      duration: 0
-    }
-  };
 
   /**
    * ***********************************
    * All local functions and variables *
    * ***********************************
    */
+   function initChart() {
+    $scope.chart = {
+      data: {
+        type: "line",
+        x: "x",
+        columns: [
+          //["x", 0, 1],
+          //["data1", 0, 2]
+        ]
+      },
+      axis: {
+        y: {
+          //label: "y",
+          show: true,
+          tick: {
+            format: function(y) {
+              return y;
+            }
+          }
+        },
+        x: {
+          label: "Time",
+          tick: {
+            //show time as HH:MM:SS
+            format: function(x) {
+              return parseTime(x);
+            },
+            //set the number of ticks to be shown, default 10
+            culling: {
+              //max: 5
+            }
+          }
+        }
+      },
+      subchart: {
+        show: true
+      },
+      legend: {
+        show: false
+      },
+      transition: {
+        duration: 0
+      }
+    };
+  }
+
   /**
    * performs HTTP GET and returns data from server.
-   * @param pathQuery path including / and query required to locate resource
-   *   from server. e.g. /packets?node=10&ch=12
+   * @param pathQuery path after / and query required to locate resource
+   *   from server. e.g. packets?node=10&ch=12
    */
   function getData(pathQuery) {
     var url = "http://"+_data.domain+":"+_data.port+"/"+pathQuery;
@@ -265,16 +264,16 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
             timestamp: parseTime(packets[0].time)
           };
           //get a subset of values for chart
-          $scope.values.packets = [];
-          for (var j = Math.min(packets.length, $scope.values.limit); j > 0; --j) {
-            $scope.values.packets[j - 1] = packets[j - 1];
+          values.packets = [];
+          for (var j = Math.min(packets.length, values.limit); j > 0; --j) {
+            values.packets[j - 1] = packets[j - 1];
           }
           //update chart
           var time = ["x"];
           var data = [currState.channel.value];
-          for (var i = 0; i < $scope.values.packets.length; ++i) {
-            time.push((new Date($scope.values.packets[i].time).valueOf()));
-            data.push($scope.values.packets[i].data);
+          for (var i = 0; i < values.packets.length; ++i) {
+            time.push((new Date(values.packets[i].time).valueOf()));
+            data.push(values.packets[i].data);
           }
           $scope.chart.data = {
             columns: [
@@ -293,12 +292,14 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     $scope.getNodes();
     //start task to get realtime value every second
     $interval(getValues, 1000);
-    //subset of channel readings of the size limit
-    $scope.values = {
-      packets: [],
-      limit: 100
-    };
+    //init chart
+    initChart();
   })();
+  //subset of channel readings of the size limit
+  var values = {
+    packets: [],
+    limit: 100
+  };
   var currState = {
     //current node selected
     node: {

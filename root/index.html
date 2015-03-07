@@ -41,6 +41,15 @@
         <div class="row" ng-controller="mainCtrl">
           <!-- chart + live channel value -->
           <div class="col-md-8">
+            <!-- chart -->
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <div class="panel-title">Interactive Chart</div>
+              </div>
+              <div class="panel-body">
+                <div xychart ng-model="chart" id="chart"></div>
+              </div><!-- /.panel-body -->
+            </div><!-- /.panel panel-default -->
             <!-- live channel value -->
             <div class="panel panel-default">
               <div class="panel-heading">
@@ -53,15 +62,6 @@
                 <p class="text-center" id="value-timestamp">
                   {{value.timestamp}}
                 </p>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-            <!-- chart -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">Interactive Chart</div>
-              </div>
-              <div class="panel-body">
-                <div xychart ng-model="chart" id="chart"></div>
               </div><!-- /.panel-body -->
             </div><!-- /.panel panel-default -->
           </div><!-- /.col-md-8 -->
