@@ -24,11 +24,13 @@ var timeOffset = new Date().getTimezoneOffset()*60000;
 var packets = [];
 setInterval(function() {
   var currTime = new Date().valueOf();
-  //if (packets.length === 5) return;
-  packets.unshift({
-    time: new Date(currTime - timeOffset).toISOString().substring(0, 19),
-    data: parseFloat((Math.random() * 100).toFixed(2))
-  })
+  for (var i = 0; i < 10; ++i) {
+    packets.unshift({
+      time: new Date(currTime - timeOffset).toISOString().substring(0, 19),
+      data: (Math.random() * 100),
+      channel: i
+    })
+  }
 }, 500);
 app.get("/packets", function(req, res) {
   console.log();

@@ -35,7 +35,7 @@
   <div class="container">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <img src="img/banner.png" class="img-responsive center-block" alt="Scandalous banner"/>
+        <img src="img/scandolous_100.png" class="img-responsive center-block" alt="Scandalous banner"/>
       </div>
       <div class="panel-body">
         <div class="row" ng-controller="mainCtrl">
@@ -44,7 +44,21 @@
             <!-- chart -->
             <div class="panel panel-default">
               <div class="panel-heading">
-                <div class="panel-title">Interactive Chart</div>
+                <div class="panel-title">
+                  <div class="row">
+                    <div class="col-md-6">
+                      Interactive Chart
+                    </div>
+                    <div class="col-md-6">
+                      <form class="form-inline">
+                        <div class="form-group">
+                          <label>Limit</label> <input type="number" class="form-control" ng-model="limit">
+                        </div>
+                      </form>
+                      
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="panel-body">
                 <div xychart ng-model="chart" id="chart"></div>
@@ -56,11 +70,15 @@
                 <div class="panel-title">Current Channel Value</div>
               </div>
               <div class="panel-body">
-                <p class="text-center" id="value-display">
-                  <strong>{{value.value}} {{value.unit}}</strong>
+                <!-- all channel readings -->
+                <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
+                  <span ng-if="$index > 0">
+                    <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
+                  </span>
                 </p>
+                <!-- timestamp for channel reading -->
                 <p class="text-center" id="value-timestamp">
-                  {{value.timestamp}}
+                  {{parseTime(chart.data.columns[0][1])}}
                 </p>
               </div><!-- /.panel-body -->
             </div><!-- /.panel panel-default -->
@@ -85,8 +103,8 @@
               </div><!-- /.panel-heading -->
               <div class="panel-body">
                 <ul class="nav nav-pills nav-stacked" id="nodes">
-                  <li ng-repeat="node in nodes" ng-class="{active:isSelected(true, node.node)}">
-                    <a href="" ng-click="setSelected(true, node)">
+                  <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
+                    <a href="" ng-click="nodes.toggle(node)">
                       {{node.node}}: {{node.device}}
                     </a>
                   </li>
@@ -100,8 +118,8 @@
               </div>
               <div class="panel-body">
                 <ul class="nav nav-pills nav-stacked" id="channels">
-                  <li ng-repeat="channel in channels" ng-class="{active:isSelected(false, channel.channel)}">
-                    <a href="" ng-click="setSelected(false, channel)">
+                  <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
+                    <a href="" ng-click="channels.toggle(channel)">
                       {{channel.channel}}: {{channel.value}}
                     </a>
                   </li>

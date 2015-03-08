@@ -1,6 +1,6 @@
 var app = angular.module("myApp", []);
 
-app.factory("_data", function($http) {
+app.factory("_data", function() {
     /**
    * Cyclic array class used to store a history of channel readings
    * @param size number of readings that can be stored
@@ -76,77 +76,80 @@ app.factory("_data", function($http) {
 app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     function($scope, $http, $interval, $timeout, _data) {
   /**
-   * ************************************
-   * All $scope functions and variables *
-   * ************************************
-   */
-   /**
-    * Determines whether a node or channel value is selected
-    * @param isNode true is value is node, false if value is channel
-    * @param value the node or channel value to be checked
-    * @return true if selected, false otherwise
-    */
-  $scope.isSelected = function(isNode, value) {
-    if (isNode) {
-      return currState.node.node === value;
-    } else {
-      return currState.channel.channel === value;
-    }
-  };
-  /**
-   * Set node or channel value as selected
-   * @param isNode true is value is node, false if value is channel
-   * @param value the node or channel value to be selected
-   */
-  $scope.setSelected = function(isNode, value) {
-    if (isNode) {
-      currState.node = value;
-      //reset channel to no selection
-      currState.channel = "";
-      $scope.getChannels();
-    } else {
-      currState.channel = value;
-    }
-    initChart();
-  };
-  /**
-   * Get all nodes from server
+   * Get all nodes from server and set them all inactive
    */
   $scope.getNodes = function() {
     var url = "nodes";
     getData(url).then(function(nodes) {
       $scope.nodes = nodes;
-      //clear selections and cached channels on node refresh
-      currState.node = "";
-      currState.channel = "";
-      $scope.channels = "";
+      //add isActive attribute to each node
+      for (var i = 0; i < $scope.nodes.length; ++i) {
+        $scope.nodes[i].isActive = false;
+      }
+      $scope.nodes.toggle = function(node) {
+        for (var i = 0; i < $scope.nodes.length; ++i) {
+          $scope.nodes[i].isActive = false;
+          if ($scope.nodes[i].node === node.node) {
+            $scope.nodes[i].isActive = true;
+          }
+        }
+        $scope.getChannels();
+      }
+      //clear cached channels on node refresh
+      $scope.channels = [];
     });
   };
+  function getActiveNode() {
+    for (var i = 0; i < $scope.nodes.length; ++i) {
+      if ($scope.nodes[i].isActive) {
+        return $scope.nodes[i];
+      }
+    }
+  }
+  function getActiveChannels() {
+    var activeChannels = [];
+    for (var i = 0; i < $scope.channels.length; ++i) {
+      if ($scope.channels[i].isActive) {
+        activeChannels.push($scope.channels[i]);
+      }
+    }
+    return activeChannels;
+  }
   /**
-   * Get all channels from server
+   * Get all channels from server and set them all inactive
    */
   $scope.getChannels = function() {
-    var url = "nodes/"+currState.node.node+"/channels";
-    getData(url).
-        then(function(channels) {
+    var url = "nodes/"+getActiveNode().node+"/channels";
+    getData(url).then(function(channels) {
       $scope.channels = channels;
+      //add isActive attribute to each channel
+      for (var i = 0; i < $scope.channels.length; ++i) {
+        $scope.channels[i].isActive = false;
+      }
+      $scope.channels.toggle = function(channel) {
+        for (var i = 0; i < $scope.channels.length; ++i) {
+          if ($scope.channels[i].channel === channel.channel) {
+            $scope.channels[i].isActive = !$scope.channels[i].isActive;
+          }
+        }
+        refreshChart();
+      }
     });
   };
-
   /**
-   * ***********************************
-   * All local functions and variables *
-   * ***********************************
+   * Initialize chart
    */
-   function initChart() {
+  function refreshChart() {
+    var columns = [["x"]];
+    var activeChannels = getActiveChannels();
+    for (var i = 0; i < activeChannels.length; ++i) {
+      columns.push([activeChannels[i].value]);
+    }
     $scope.chart = {
       data: {
         type: "line",
         x: "x",
-        columns: [
-          //["x", 0, 1],
-          //["data1", 0, 2]
-        ]
+        columns: columns
       },
       axis: {
         y: {
@@ -161,9 +164,9 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
         x: {
           label: "Time",
           tick: {
-            //show time as HH:MM:SS
+            //show time as HH:mm:ss
             format: function(x) {
-              return parseTime(x);
+              return $scope.parseTime(x);
             },
             //set the number of ticks to be shown, default 10
             culling: {
@@ -176,7 +179,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
         show: true
       },
       legend: {
-        show: false
+        //show: false
       },
       transition: {
         duration: 0
@@ -211,9 +214,8 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
    * @param dateTime dateTime string YYYY-MM-DDTHH:mm:ss
    * @return time in the format HH:mm:ss
    */
-  function parseTime(dateTime) {
+  $scope.parseTime = function(dateTime) {
     var parsedDate = new Date(dateTime);
-    var hours = parsedDate.getHours()
     return addPadding(parsedDate.getHours())+":"+
         addPadding(parsedDate.getMinutes())+"."+
         addPadding(parsedDate.getSeconds());
@@ -229,8 +231,10 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       return x;
     }
   }
-  function getUnit() {
-    var channel = currState.channel.value;
+  /**
+   * Get unit for channel reading
+   */
+  $scope.getUnit = function(channel) {
     if (channel.search(/current/i) !== -1) {
       return "A";
     } else if (channel.search(/voltage/i) !== -1) {
@@ -241,78 +245,103 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       return "";
     }
   }
+  /**
+   * Gets packets from server and updates channel reading and graph
+   */
   function getValues() {
-    if (currState.node !== "" && currState.channel !== "") {
-      //var url = "/nodes/"+currState.node.node+"/channel/"+currState.channel.channel+".json";
-      var url = "packets?node="+currState.node.node+"&ch="+currState.channel.channel;
+    var activeChannels = getActiveChannels();
+    if (getActiveNode !== null && activeChannels.length > 0) {
+      var columns = [];
+      var url = "packets?node="+getActiveNode().node;
       getData(url).then(function(allPackets) {
-        //retrieve all packets and remove duplicates based on time
-        var currPacketTime;
-        var packets = allPackets.filter(function(element) {
-          if (currPacketTime !== element.time) {
-            currPacketTime = element.time;
-            return true;
-          } else {
-            return false;
-          }
-        })
-        if (packets !== null) {
-          //update live channel reading
-          $scope.value = {
-            value: packets[0].data.toFixed(2),
-            unit: getUnit(),
-            timestamp: parseTime(packets[0].time)
-          };
+        for (var i = 0; i < activeChannels.length; ++i) {
+          //filter packets by channel and remove duplicates based on time
+          var currPacketTime = "";
+          var packets = allPackets.filter(function(element) {
+            if (activeChannels[i].channel === element.channel && currPacketTime !== element.time) {
+              currPacketTime = element.time;
+              return true;
+            } else {
+              return false;
+            }
+          });
           //get a subset of values for chart
-          values.packets = [];
-          for (var j = Math.min(packets.length, values.limit); j > 0; --j) {
-            values.packets[j - 1] = packets[j - 1];
+          var data = [];
+          //add x axis time data in columns[0]
+          if (columns.length === 0) {
+            var timezoneOffset = new Date().getTimezoneOffset() * 60*1000;
+            data.push("x");
+            for (var j = Math.min(packets.length, $scope.limit); j > 0; --j) {
+              data[j] = new Date(packets[j - 1].time).valueOf() + timezoneOffset;
+            }
+            columns.push(data);
+            data = [];
           }
-          //update chart
-          var time = ["x"];
-          var data = [currState.channel.value];
-          for (var i = 0; i < values.packets.length; ++i) {
-            time.push((new Date(values.packets[i].time).valueOf()));
-            data.push(values.packets[i].data);
+          data.push(activeChannels[i].value);
+          for (var j = Math.min(packets.length, $scope.limit); j > 0; --j) {
+            data[j] = parseFloat(packets[j - 1].data.toFixed(2));
           }
-          $scope.chart.data = {
-            columns: [
-              time,
-              data
-            ],
-          };
+          columns.push(data);
         }
+        //update chart
+        $scope.chart.data = {columns: columns};
       });
     }
-  };
+  }
 
   //init
   (function() {
+    //max limit of data points on chart
+    $scope.limit = 50;
     //get all nodes
     $scope.getNodes();
     //start task to get realtime value every second
     $interval(getValues, 1000);
     //init chart
-    initChart();
+    $scope.chart = {
+      data: {
+        type: "line",
+        x: "x",
+        columns: [
+          ["x"],
+          ["data"]
+        ]
+      },
+      axis: {
+        y: {
+          //label: "y",
+          show: true,
+          tick: {
+            format: function(y) {
+              return y;
+            }
+          }
+        },
+        x: {
+          label: "Time",
+          tick: {
+            //show time as HH:mm:ss
+            format: function(x) {
+              return $scope.parseTime(x);
+            },
+            //set the number of ticks to be shown, default 10
+            culling: {
+              //max: 5
+            }
+          }
+        }
+      },
+      subchart: {
+        show: true
+      },
+      legend: {
+        //show: false
+      },
+      transition: {
+        duration: 0
+      }
+    };
   })();
-  //subset of channel readings of the size limit
-  var values = {
-    packets: [],
-    limit: 100
-  };
-  var currState = {
-    //current node selected
-    node: {
-      node: "1",
-      device: "motor"
-    },
-    //current channel selected
-    channel: {
-      channel: "2",
-      value: "current"
-    }
-  };
-
 }]);
 
 /*
