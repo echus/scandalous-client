@@ -1,12 +1,3 @@
-#channels {
-  max-height: 150px;
-  overflow-y: scroll;
-}
-
-#nodes {
-  max-height: 250px;
-  overflow-y: scroll;
-}
 #chart-cont {
   max-width: 600px;
   overflow-x: scroll;
