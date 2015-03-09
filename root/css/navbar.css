@@ -1,0 +1,11 @@
+body {
+  padding-top: 64px;
+}
+
+.navbar-nav li {
+  line-height: 50px;
+}
+
+.navbar {
+  padding: 7px 0;
+}

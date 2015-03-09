@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <title>Scandalous Front End</title>
+  <title>Scandalous</title>
   <meta charset="utf-8">
   <!-- ensure proper rendering and touch zooming on devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +14,7 @@
   <link rel="stylesheet" href="css/bootstrap/css/bootstrap.min.css">
 
   <!-- Optional theme -->
-  <link rel="stylesheet" href="css/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="css/bootstrap/css/bootswatch.cyborg.bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="css/bootstrap/js/bootstrap.min.js"></script>
@@ -30,120 +31,156 @@
 
   <!-- additional CSS -->
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
+  <link rel="stylesheet" type="text/css" href="css/navbar.css"/>
+  <link rel="stylesheet" type="text/css" href="css/sidebar.css"/>
 </head>
+
 <body ng-app="myApp">
-  <div class="container">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <img src="img/scandolous_100.png" class="img-responsive center-block" alt="Scandalous banner"/>
+  
+  <!-- Page wrapper for sidebar -->
+  <div id="wrapper" ng-controller="mainCtrl">
+
+
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a href="#"><img src="img/navbrand.png" alt="Scandalous"></a>
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-menubuilder"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
       </div>
-      <div class="panel-body">
-        <div class="row" ng-controller="mainCtrl">
-          <!-- chart + live channel value -->
-          <div class="col-md-8">
-            <!-- chart -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">
-                  <div class="row">
-                    <div class="col-md-6">
-                      Interactive Chart
-                    </div>
-                    <div class="col-md-6">
-                      <form class="form-inline">
-                        <div class="form-group">
-                          <label>Limit</label> <input type="number" class="form-control" ng-model="limit">
-                        </div>
-                      </form>
-                      
+
+      <div class="collapse navbar-collapse navbar-menubuilder">
+        <!-- Nav tabs -->
+        <ul class="nav navbar-nav navbar-left">
+            <li><a href="#">MPPT</a>
+            </li>
+            <li><a href="#">Rolldown</a>
+            </li>
+        </ul>
+
+        <!-- Domain/port settings -->
+        <form class="navbar-form navbar-right" role="search">
+          <div class="form-group">
+            <input type="text" class="form-control" ng-controller="domainCtrl" ng-model="domain" ng-change="setDomain(domain)" name="domain" placeholder="Domain">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" ng-controller="portCtrl" ng-model="port" ng-change="setPort(port)" name="port" placeholder="Port">
+          </div>
+          <button type="button" class="btn btn-warning" ng-click="getNodes()">
+            <span class="glyphicon glyphicon-refresh"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+
+
+
+  <!-- Sidebar -->
+  <div id="sidebar-wrapper">
+    <div class="sidebar-nav">
+      <ul class="nav nav-pills nav-stacked nav-warning">
+        
+        <li><h3>Nodes</h3></li>
+        
+        <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
+          <a href="" ng-click="nodes.toggle(node)">
+            {{node.node}}: {{node.device}}
+          </a>
+        </li>
+
+        <li><h3>Channels</h3></li>
+        
+        <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
+          <a href="" ng-click="channels.toggle(channel)">
+            {{channel.channel}}: {{channel.value}}
+          </a>
+        </li>
+        
+        <li>
+          <div class="panel panel-default">
+             <div class="panel-body">
+                This is a Basic panel
+             </div>
+          </div>
+        </li>
+      
+      </ul>
+    </div>
+  </div>
+  <!-- /#sidebar-wrapper -->
+
+
+  
+  <!-- Content -->
+  <div id="page-content-wrapper">
+    
+    <div class="container">
+          
+          <div class="row">
+            
+            <!-- chart + live channel value -->
+            <div class="col-md-10">
+              
+              <!-- chart -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <div class="panel-title">
+                    <div class="row">
+                      <div class="col-md-5">
+                        Interactive Chart
+                      </div>
+                      <div class="col-md-5">
+                        <form class="form-inline">
+                          <div class="form-group">
+                            <label>Limit</label> <input type="number" class="form-control" ng-model="limit">
+                          </div>
+                        </form>
+                        
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="panel-body">
-                <div xychart ng-model="chart" id="chart"></div>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-            <!-- live channel value -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">Current Channel Value</div>
-              </div>
-              <div class="panel-body">
-                <!-- all channel readings -->
-                <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
-                  <span ng-if="$index > 0">
-                    <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
-                  </span>
-                </p>
-                <!-- timestamp for channel reading -->
-                <p class="text-center" id="value-timestamp">
-                  {{parseTime(chart.data.columns[0][1])}}
-                </p>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-          </div><!-- /.col-md-8 -->
-          <!-- selectable nodes and channels -->
-          <div class="col-md-4">
-            <!-- nodes -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">
-                  <div class="row">
-                    <div class="col-md-9">
-                      Available Nodes
-                    </div>
-                    <div class="col-md-3">
-                      <button type="button" class="btn btn-warning" ng-click="getNodes()">
-                        <span class="glyphicon glyphicon-refresh"></span>
-                      </button>
-                    </div><!-- /.col-md-3 -->
-                  </div><!-- /.row -->
-                </div><!-- /.panel-title -->
-              </div><!-- /.panel-heading -->
-              <div class="panel-body">
-                <ul class="nav nav-pills nav-stacked" id="nodes">
-                  <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
-                    <a href="" ng-click="nodes.toggle(node)">
-                      {{node.node}}: {{node.device}}
-                    </a>
-                  </li>
-                </ul>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-            <!-- channels -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">Channels</div>
-              </div>
-              <div class="panel-body">
-                <ul class="nav nav-pills nav-stacked" id="channels">
-                  <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
-                    <a href="" ng-click="channels.toggle(channel)">
-                      {{channel.channel}}: {{channel.value}}
-                    </a>
-                  </li>
-                </ul>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-          </div><!-- /.col-md-4 -->
-        </div><!-- /.row -->
-        <!-- domain and port -->
-        <div class="row">
-          <div class="col-md-12">
-            <div class="input-group">
-              <span class="input-group-addon">Domain</span>
-              <input type="text" class="form-control" ng-controller="domainCtrl" ng-model="domain" ng-change="setDomain(domain)"/>
-              <span class="input-group-addon">Port</span>
-              <input type="text" class="form-control" ng-controller="portCtrl" ng-model="port" ng-change="setPort(port)"/>
-            </div><!-- /.input-group -->
-          </div><!-- /.col-md-12 -->
-        </div><!-- /.row -->
-      </div><!-- /.panel-body -->
-    </div><!-- /.panel panel-default-->
-  </div><!-- /.container -->
+                <div class="panel-body">
+                  <div xychart ng-model="chart" id="chart"></div>
+                </div><!-- /.panel-body -->
+              </div><!-- /.panel panel-default -->
+              
+              <!-- live channel value -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <div class="panel-title">Current Channel Value</div>
+                </div>
+                <div class="panel-body">
+                  <!-- all channel readings -->
+                  <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
+                    <span ng-if="$index > 0">
+                      <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
+                    </span>
+                  </p>
+                  <!-- timestamp for channel reading -->
+                  <p class="text-center" id="value-timestamp">
+                    {{parseTime(chart.data.columns[0][1])}}
+                  </p>
+                </div><!-- /.panel-body -->
+              </div><!-- /.panel panel-default -->
+            </div><!-- /.col-md-8 -->
+            
+     
+          </div><!-- /.row -->
+
+    </div><!-- /.container -->
+  
+  </div><!--/#page-content-wrapper-->
+
+  </div><!--/#wrapper-->
+
   <!-- javascript application and controllers -->
   <script src="js/app.js"></script>
   <script src="js/directives.js"></script>
+
 </body>
 </html>
