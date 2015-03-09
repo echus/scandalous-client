@@ -85,26 +85,36 @@
           <div class="panel-heading">
             <div class="panel-title">Nodes</div>
           </div>
-          <ul class="nav nav-pills nav-stacked">
-            <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
-              <a href="" ng-click="nodes.toggle(node)">
-                {{node.node}}: {{node.device}}
-              </a>
-            </li>
-          </ul>
+          <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+              <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
+                <a href="" ng-click="nodes.toggle(node)">
+                  {{node.node}}: {{node.device}}
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class="panel panel-default">
           <div class="panel-heading">
             <div class="panel-title">Channels</div>
           </div>
-          <ul class="nav nav-pills nav-stacked">
-            <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
-              <a href="" ng-click="channels.toggle(channel)">
-                {{channel.channel}}: {{channel.value}}
-              </a>
-            </li>
-          </ul>
+          <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+              <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
+                <a href="" ng-click="channels.toggle(channel)">
+                  {{channel.channel}}: {{channel.value}}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <label>Limit:</label><input type="number" class="form-control" ng-model="limit">
+          </div>
         </div>
       </div><!-- node/channel column -->
     
@@ -113,33 +123,13 @@
         
         <!-- chart -->
         <div class="panel panel-default">
-          <div class="panel-heading">
-            <div class="panel-title">
-              <div class="row">
-                <div class="col-md-5 col-md-offset-7">
-                  <form class="form-inline">
-                    <div class="form-group">
-                      <label>Limit</label><input type="number" class="form-control" ng-model="limit">
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div><!-- /.panel-title -->
-          </div><!-- /.panel-heading -->
-
           <div class="panel-body">
             <div xychart ng-model="chart" id="chart"></div>
           </div><!-- /.panel-body -->
-        
         </div><!-- /.panel panel-default -->
-
-
 
         <!-- live channel value -->
         <div class="panel panel-default">
-          <div class="panel-heading">
-            <div class="panel-title">Current Channel Value</div>
-          </div>
           <div class="panel-body">
             <!-- all channel readings -->
             <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
