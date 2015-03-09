@@ -77,12 +77,12 @@
 
  
   <!-- Content -->
-  <div class="container">
-    
+  <div class="container-fluid">
+     
     <!-- Node and Channel lists  -->
     <div class="row">
-      <div class="col-md-3">
-        
+      
+      <div class="col-md-2">
         <div class="panel panel-default">
           <div class="panel-body">
             <label>Limit:</label><input type="number" class="form-control" ng-model="limit">
@@ -104,6 +104,10 @@
           </div>
         </div>
 
+      </div><!-- node/channel column -->
+    
+    <!-- Channel lists  -->
+      <div class="col-md-2">
         <div class="panel panel-default">
           <div class="panel-heading">
             <div class="panel-title">Channels</div>
@@ -122,7 +126,7 @@
       </div><!-- node/channel column -->
     
       <!-- chart + live channel value -->
-      <div class="col-md-9">
+      <div class="col-md-8">
         
         <!-- chart -->
         <div class="panel panel-default">
