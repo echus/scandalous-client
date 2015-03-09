@@ -1,6 +1,4 @@
 /* c3 */
-.c3 .c3-axis path, 
-.c3 .c3-axis text, 
-.c3 .c3-axis line {
+.c3 path, .c3 line, .c3 text {
   stroke: white;
 }
