@@ -1,3 +1,16 @@
+/* Node selection panels */
+
+.nav-pills > li a:hover,
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  background-color: orange;
+} 
+
+
+
+/* Main panels */
+
 #chart-cont {
   max-width: 600px;
   overflow-x: scroll;

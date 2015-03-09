@@ -81,23 +81,31 @@
     <!-- Node and Channel lists  -->
     <div class="row">
       <div class="col-md-3">
-        <ul class="nav nav-pills nav-stacked nav-warning">
-          <li><h3>Nodes</h3></li>
-          
-          <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
-            <a href="" ng-click="nodes.toggle(node)">
-              {{node.node}}: {{node.device}}
-            </a>
-          </li>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <div class="panel-title">Nodes</div>
+          </div>
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
+              <a href="" ng-click="nodes.toggle(node)">
+                {{node.node}}: {{node.device}}
+              </a>
+            </li>
+          </ul>
+        </div>
 
-          <li><h3>Channels</h3></li>
-          
-          <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
-            <a href="" ng-click="channels.toggle(channel)">
-              {{channel.channel}}: {{channel.value}}
-            </a>
-          </li>
-        </ul>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <div class="panel-title">Channels</div>
+          </div>
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
+              <a href="" ng-click="channels.toggle(channel)">
+                {{channel.channel}}: {{channel.value}}
+              </a>
+            </li>
+          </ul>
+        </div>
       </div><!-- node/channel column -->
     
       <!-- chart + live channel value -->
@@ -108,11 +116,10 @@
           <div class="panel-heading">
             <div class="panel-title">
               <div class="row">
-                <div class="col-md-5">Interactive Chart</div>
-                <div class="col-md-5">
+                <div class="col-md-5 col-md-offset-7">
                   <form class="form-inline">
                     <div class="form-group">
-                      <label>Limit</label> <input type="number" class="form-control" ng-model="limit">
+                      <label>Limit</label><input type="number" class="form-control" ng-model="limit">
                     </div>
                   </form>
                 </div>
