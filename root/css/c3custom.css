@@ -2,3 +2,7 @@
 .c3 path, .c3 line, .c3 text {
   stroke: white;
 }
+
+.c3 .extent {
+  fill: white;
+}
