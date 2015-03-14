@@ -86,6 +86,9 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       for (var i = 0; i < $scope.nodes.length; ++i) {
         $scope.nodes[i].isActive = false;
       }
+      //set selected node as active then query server for channels
+      //limit the number of active nodes to 1. The only time there is no
+      //active node is at start up
       $scope.nodes.toggle = function(node) {
         for (var i = 0; i < $scope.nodes.length; ++i) {
           $scope.nodes[i].isActive = false;
@@ -99,6 +102,10 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       $scope.channels = [];
     });
   };
+  /**
+   * get the active node in the list of all nodes
+   * @return $scope.node object
+   */
   function getActiveNode() {
     for (var i = 0; i < $scope.nodes.length; ++i) {
       if ($scope.nodes[i].isActive) {
@@ -106,6 +113,10 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       }
     }
   }
+  /**
+   * get the active channels in the list of all channels
+   * @return list of $scope.channel object
+   */
   function getActiveChannels() {
     var activeChannels = [];
     for (var i = 0; i < $scope.channels.length; ++i) {
@@ -126,6 +137,8 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       for (var i = 0; i < $scope.channels.length; ++i) {
         $scope.channels[i].isActive = false;
       }
+      //set active channel as inactive, vice versa, then refresh chart to
+      //plot new data that corresponds to change in active channels
       $scope.channels.toggle = function(channel) {
         for (var i = 0; i < $scope.channels.length; ++i) {
           if ($scope.channels[i].channel === channel.channel) {
@@ -137,10 +150,12 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     });
   };
   /**
-   * Initialize chart
+   * refresh chart, used only when active channels change as the whole graph
+   * needs to be re-rendered.
    */
   function refreshChart() {
     var columns = [["x"]];
+    //add new y axis data
     var activeChannels = getActiveChannels();
     for (var i = 0; i < activeChannels.length; ++i) {
       columns.push([activeChannels[i].value]);
@@ -223,6 +238,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
   /**
    * prefix numbers in the range [0, 9] with "0"
    * @param x number to be formatted
+   * @return number as a string
    */
   function addPadding(x) {
     if (x < 10 && x >= 0) {
@@ -233,6 +249,8 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
   }
   /**
    * Get unit for channel reading
+   * @param channel the channel name i.e. channel.value
+   * @return unit as a string
    */
   $scope.getUnit = function(channel) {
     if (channel.search(/current/i) !== -1) {
@@ -246,10 +264,11 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     }
   }
   /**
-   * Gets packets from server and updates channel reading and graph
+   * Gets packets from server and update channel reading and plot new values to graph
    */
   function getValues() {
     var activeChannels = getActiveChannels();
+    //do not get new values if either node or channel are not selected
     if (getActiveNode !== null && activeChannels.length > 0) {
       var columns = [];
       var url = "packets?node="+getActiveNode().node;
@@ -265,7 +284,6 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
               return false;
             }
           });
-          //get a subset of values for chart
           var data = [];
           //add x axis time data in columns[0]
           if (columns.length === 0) {
@@ -277,13 +295,14 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
             columns.push(data);
             data = [];
           }
+          //get a subset of values for chart
           data.push(activeChannels[i].value);
           for (var j = Math.min(packets.length, $scope.limit); j > 0; --j) {
             data[j] = parseFloat(packets[j - 1].data.toFixed(2));
           }
           columns.push(data);
         }
-        //update chart
+        //plot new values to chart
         $scope.chart.data = {columns: columns};
       });
     }
@@ -291,7 +310,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
 
   //init
   (function() {
-    //max limit of data points on chart
+    //initial max limit of data points on chart
     $scope.limit = 50;
     //get all nodes
     $scope.getNodes();
