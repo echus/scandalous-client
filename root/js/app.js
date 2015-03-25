@@ -1,67 +1,6 @@
 var app = angular.module("myApp", []);
 
 app.factory("_data", function() {
-    /**
-   * Cyclic array class used to store a history of channel readings
-   * @param size number of readings that can be stored
-   */
-  function CyclicArray(size) {
-    //packets from server stored in a circular array of predefined size
-    this.packets = new Array(size);
-    //index for next oldest packet in packets
-    this.head = 0;
-    //index for next newest packet in packets
-    this.tail = 1;
-  }
-  CyclicArray.prototype = {
-    /**
-     * inserts the oldest packet at head of packets array.
-     * if packets is full after insertion, the newest packet is lost
-     *
-     * @param packet the oldest packet to be placed in packets
-     * @precondition packets.length > 1
-     */
-    pushFront: function(packet) {
-      this.packets[this.head--] = packet;
-      //convert -ve index to +ve mod the length of packets
-      this.head = (this.head + this.packets.length) % this.packets.length;
-      //allow overwrite of newest element if array is full
-      if (this.head === this.tail)
-        --this.tail;
-    },
-    /**
-     * inserts the newest packet at tail of packets array.
-     * if packets is full after insertion, the oldest packet is lost
-     *
-     * @param packet the newest packet to be placed in packets
-     * @precondition packets.length > 1
-     */
-    pushBack: function(packet) {
-      this.packets[this.tail++] = packet;
-      //wrap index around
-      this.tail %= this.packets.length;
-      //allow overwrite of oldest element if array is full
-      if (this.head === this.tail)
-        ++this.head;
-    },
-    /**
-     * iterates packets array sequentially from head to tail and returns
-     * an array containing a copy of all packets in order of head to tail.
-     *
-     * @return array with all packets in order
-     */
-    getInOrder: function() {
-      var packetsInOrder = [];
-      //get position of oldest element
-      var i = (this.head + 1) % this.packets.length;
-      while(i != this.tail) {
-        packetsInOrder.push(this.packets[i++]);
-        i %= this.packets.length;
-      }
-      return packetsInOrder;
-    }
-  };
-
   return {
     //default domain of scandalous backend
     domain: "0.0.0.0",
@@ -140,15 +79,68 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       //set active channel as inactive, vice versa, then refresh chart to
       //plot new data that corresponds to change in active channels
       $scope.channels.toggle = function(channel) {
-        for (var i = 0; i < $scope.channels.length; ++i) {
-          if ($scope.channels[i].channel === channel.channel) {
-            $scope.channels[i].isActive = !$scope.channels[i].isActive;
+        var activeChannels = getActiveChannels();
+        //allow max of 2 selected channels
+        if (activeChannels.length === 2) {
+          for (var i = 0; i < activeChannels.length; ++i) {
+            if (activeChannels[i].channel === channel.channel) {
+              activeChannels[i].isActive = !channel.isActive;
+              console.log(activeChannels[i].channel);
+            }
+          }
+        } else {
+          for (var i = 0; i < $scope.channels.length; ++i) {
+            if ($scope.channels[i].channel === channel.channel) {
+              $scope.channels[i].isActive = !$scope.channels[i].isActive;
+            }
           }
         }
         refreshChart();
       }
     });
   };
+  /**
+   * render chart used when there are changes to selected channels to be drawn
+   * or during initialization
+   * @param columns the data to be plotted
+   */
+  function renderChart(columns) {
+    var axes = {};
+    var axis = {
+      x: {
+        label: "Time",
+        tick: {
+          //show time as HH:mm:ss
+          format: function(x) {
+            return $scope.parseTime(x);
+          },
+        }
+      }
+    };
+    var labels = ['y', 'y2'];
+    for (var i = 1; i < columns.length; ++i) {
+      //bind data to corresponding axes
+      axes[columns[i][0]] = labels[i - 1];
+      //label and show axes appropriately
+      axis[labels[i - 1]] = {label: columns[i][0], show: true};
+    }
+    console.log(axes);
+    $scope.chart = {
+      data: {
+        type: "line",
+        x: "x",
+        columns: columns,
+        axes: axes
+      },
+      axis: axis,
+      subchart: {
+        show: true
+      },
+      transition: {
+        duration: 0
+      }
+    };
+  }
   /**
    * refresh chart, used only when active channels change as the whole graph
    * needs to be re-rendered.
@@ -160,46 +152,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     for (var i = 0; i < activeChannels.length; ++i) {
       columns.push([activeChannels[i].value]);
     }
-    $scope.chart = {
-      data: {
-        type: "line",
-        x: "x",
-        columns: columns
-      },
-      axis: {
-        y: {
-          //label: "y",
-          show: true,
-          tick: {
-            format: function(y) {
-              return y;
-            }
-          }
-        },
-        x: {
-          label: "Time",
-          tick: {
-            //show time as HH:mm:ss
-            format: function(x) {
-              return $scope.parseTime(x);
-            },
-            //set the number of ticks to be shown, default 10
-            culling: {
-              //max: 5
-            }
-          }
-        }
-      },
-      subchart: {
-        show: true
-      },
-      legend: {
-        //show: false
-      },
-      transition: {
-        duration: 0
-      }
-    };
+    renderChart(columns);
   }
 
   /**
@@ -271,7 +224,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     //do not get new values if either node or channel are not selected
     if (getActiveNode !== null && activeChannels.length > 0) {
       var columns = [];
-      var url = "packets?node="+getActiveNode().node;
+      var url = "packets?node="+getActiveNode().node+"&limit="+$scope.limit*5;
       getData(url).then(function(allPackets) {
         for (var i = 0; i < activeChannels.length; ++i) {
           //filter packets by channel and remove duplicates based on time
@@ -317,49 +270,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     //start task to get realtime value every second
     $interval(getValues, 1000);
     //init chart
-    $scope.chart = {
-      data: {
-        type: "line",
-        x: "x",
-        columns: [
-          ["x"],
-          ["data"]
-        ]
-      },
-      axis: {
-        y: {
-          //label: "y",
-          show: true,
-          tick: {
-            format: function(y) {
-              return y;
-            }
-          }
-        },
-        x: {
-          label: "Time",
-          tick: {
-            //show time as HH:mm:ss
-            format: function(x) {
-              return $scope.parseTime(x);
-            },
-            //set the number of ticks to be shown, default 10
-            culling: {
-              //max: 5
-            }
-          }
-        }
-      },
-      subchart: {
-        show: true
-      },
-      legend: {
-        //show: false
-      },
-      transition: {
-        duration: 0
-      }
-    };
+    renderChart([["x", 0, 1000, 2000],["data", 50, 100, 50],["data2", 0, 1, 2]]);
   })();
 }]);
 
@@ -388,4 +299,3 @@ app.controller("portCtrl", ["$scope", "_data",
     console.log("port changed to " + _data.port);
   };
 }]);
-
