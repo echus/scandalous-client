@@ -43,7 +43,7 @@
   <div ng-controller="mainCtrl">
 
   <!-- Navigation -->
-  <div ng-include src="'navbar-template.html'"></div>
+  <div ng-include="'navbar-template.html'"></div>
 
  
   <!-- Content -->
@@ -54,39 +54,13 @@
       
       <div class="col-md-2">
          
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <div class="panel-title">Nodes</div>
-          </div>
-          <div class="panel-body">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
-                <a href="" ng-click="nodes.toggle(node)">
-                  {{node.node}}: {{node.device}}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <div ng-include="'node-list-template.html'"></div>
 
       </div><!-- node/channel column -->
     
     <!-- Channel lists  -->
       <div class="col-md-2">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <div class="panel-title">Channels</div>
-          </div>
-          <div class="panel-body">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
-                <a href="" ng-click="channels.toggle(channel)">
-                  {{channel.channel}}: {{channel.value}}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <div ng-include="'channel-list-template.html'"></div>
 
         <div class="panel panel-default">
           <div class="panel-body">
@@ -101,27 +75,10 @@
       <div class="col-md-8">
         
         <!-- chart -->
-        <div class="panel panel-default">
-          <div class="panel-body">
-            <div xychart ng-model="chart" id="chart"></div>
-          </div><!-- /.panel-body -->
-        </div><!-- /.panel panel-default -->
+        <div ng-include="'chart-template.html'"></div>
 
         <!-- live channel value -->
-        <div class="panel panel-default">
-          <div class="panel-body">
-            <!-- all channel readings -->
-            <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
-              <span ng-if="$index > 0">
-                <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
-              </span>
-            </p>
-            <!-- timestamp for channel reading -->
-            <p class="text-center" id="value-timestamp">
-              {{parseTime(chart.data.columns[0][1])}}
-            </p>
-          </div><!-- /.panel-body -->
-        </div><!-- /.panel panel-default -->
+        <div ng-include="'channel-value-template.html'"></div>
       
       </div><!-- graph column -->
     
