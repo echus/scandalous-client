@@ -1,19 +1,29 @@
-var app = angular.module("myApp", []);
+var app = angular.module("myApp", [])
 
-app.factory("_data", function() {
+app.factory("_backend", function() {
   return {
     //default domain of scandalous backend
     domain: "0.0.0.0",
     //default port of scadalous backend
     port: "8080",
-  };
-});
+    //function to get url of backend
+    getURL: function() {
+      return domain+":"+port+"/"
+    }
+  }
+})
+
+app.factory("_nodes", function() {
+  return {
+
+  }
+})
 
 /**
  * 
  */
-app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
-    function($scope, $http, $interval, $timeout, _data) {
+app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backend",
+    function($scope, $http, $interval, $timeout, _backend) {
   /**
    * Get all nodes from server and set them all inactive
    */
@@ -161,7 +171,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
    *   from server. e.g. packets?node=10&ch=12
    */
   function getData(pathQuery) {
-    var url = "http://"+_data.domain+":"+_data.port+"/"+pathQuery;
+    var url = "http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
     console.log("request: " + url);
     return $http.get(url).then(
       function(response) {
@@ -273,29 +283,31 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     renderChart([["x", 0, 1000, 2000],["data", 50, 100, 50],["data2", 0, 1, 2]]);
   })();
 }]);
-
+app.controller("formCtrl", ["$scope", "_backend", function($scope, _backend) {
+  //$scope.nodes = 
+}])
 /*
  * controller used to set/get domain of scandalous backend
  */
-app.controller("domainCtrl", ["$scope", "_data",
-    function($scope, _data) {
-  $scope.domain = _data.domain;
-  //sets domain of backend in _data to given domain
+app.controller("domainCtrl", ["$scope", "_backend",
+    function($scope, _backend) {
+  $scope.domain = _backend.domain;
+  //sets domain of backend in _backend to given domain
   $scope.setDomain = function(domain) {
-    _data.domain = domain;
-    console.log("domain changed to " + _data.domain);
+    _backend.domain = domain;
+    console.log("domain changed to " + _backend.domain);
   };
 }]);
 
 /*
  * controller used to get/set port of scandalous backend
  */
-app.controller("portCtrl", ["$scope", "_data",
-    function($scope, _data) {
-  $scope.port = _data.port;
-  //sets port of backend in _data to given port
+app.controller("portCtrl", ["$scope", "_backend",
+    function($scope, _backend) {
+  $scope.port = _backend.port;
+  //sets port of backend in _backend to given port
   $scope.setPort = function(port) {
-    _data.port = port;
-    console.log("port changed to " + _data.port);
+    _backend.port = port;
+    console.log("port changed to " + _backend.port);
   };
 }]);
