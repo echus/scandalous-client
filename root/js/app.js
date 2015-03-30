@@ -6,39 +6,76 @@ app.factory("_backend", function() {
     domain: "0.0.0.0",
     //default port of scadalous backend
     port: "8080",
-    //function to get url of backend
-    getURL: function() {
-      return domain+":"+port+"/"
-    }
+    /**
+     * performs HTTP GET and returns data from server.
+     * @param pathQuery path after / and query required to locate resource
+     *   from server. e.g. packets?node=10&ch=12
+     */
+    getData: function(pathQuery) {
+      var url = "http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
+      console.log("request: " + url);
+      return $http.get(url).then(
+        function(response) {
+          //on successful GET return data
+          console.log(response.status + " " + response.statusText);
+          return response.data;
+        },
+        function(response) {
+          //on unsuccessful GET return null
+          console.log(response.status + " " + response.statusText);
+          return null;
+        }
+      );
+    },
+    postData: function(pathQuery, data) {
+      var url = "http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
+      console.log("request: " + url + data);
+      return $http.get(url).then(
+        function(response) {
+          //on successful GET return data
+          console.log(response.status + " " + response.statusText);
+          return response.data;
+        },
+        function(response) {
+          //on unsuccessful GET return null
+          console.log(response.status + " " + response.statusText);
+          return null;
+        }
+      );
+
+    },
   }
 })
 
 app.factory("_nodes", function() {
   return {
-
+    nodes: [],
+  }
+})
+app.factory("_channels", function() {
+  return {
+    channels: [],
   }
 })
 
-/**
- * 
- */
-app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backend",
-    function($scope, $http, $interval, $timeout, _backend) {
+app.controller("selectionCtrl", ["$scope", "$http", "_backend", "_nodes", "_channels",
+    function($scope, $http, _backend, _nodes, _channels) {
   /**
    * Get all nodes from server and set them all inactive
    */
   $scope.getNodes = function() {
     var url = "nodes";
-    getData(url).then(function(nodes) {
-      $scope.nodes = nodes;
+    _backend.getData(url).then(function(nodes) {
+      _nodes.nodes = nodes;
       //add isActive attribute to each node
-      for (var i = 0; i < $scope.nodes.length; ++i) {
-        $scope.nodes[i].isActive = false;
+      for (var i = 0; i < _nodes.nodes.length; ++i) {
+        _nodes.nodes[i].isActive = false;
       }
+      $scope.nodes = _nodes.nodes;
       //set selected node as active then query server for channels
       //limit the number of active nodes to 1. The only time there is no
       //active node is at start up
-      $scope.nodes.toggle = function(node) {
+      scope.nodes.toggle = function(node) {
         for (var i = 0; i < $scope.nodes.length; ++i) {
           $scope.nodes[i].isActive = false;
           if ($scope.nodes[i].node === node.node) {
@@ -62,6 +99,13 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backen
       }
     }
   }
+  
+}])
+/**
+ * 
+ */
+app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backend",
+    function($scope, $http, $interval, $timeout, _backend) {
   /**
    * get the active channels in the list of all channels
    * @return list of $scope.channel object
@@ -80,7 +124,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backen
    */
   $scope.getChannels = function() {
     var url = "nodes/"+getActiveNode().node+"/channels";
-    getData(url).then(function(channels) {
+    _backend.getData(url).then(function(channels) {
       $scope.channels = channels;
       //add isActive attribute to each channel
       for (var i = 0; i < $scope.channels.length; ++i) {
@@ -165,27 +209,6 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backen
     renderChart(columns);
   }
 
-  /**
-   * performs HTTP GET and returns data from server.
-   * @param pathQuery path after / and query required to locate resource
-   *   from server. e.g. packets?node=10&ch=12
-   */
-  function getData(pathQuery) {
-    var url = "http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
-    console.log("request: " + url);
-    return $http.get(url).then(
-      function(response) {
-        //on successful GET return data
-        console.log(response.status + " " + response.statusText);
-        return response.data;
-      },
-      function(response) {
-        //on unsuccessful GET return null
-        console.log(response.status + " " + response.statusText);
-        return null;
-      }
-    );
-  }
 
   /**
    * Given a date in dateTime format, returns the time in 24hr format
@@ -235,7 +258,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backen
     if (getActiveNode !== null && activeChannels.length > 0) {
       var columns = [];
       var url = "packets?node="+getActiveNode().node+"&limit="+$scope.limit*5;
-      getData(url).then(function(allPackets) {
+      _backend.getData(url).then(function(allPackets) {
         for (var i = 0; i < activeChannels.length; ++i) {
           //filter packets by channel and remove duplicates based on time
           var currPacketTime = "";
