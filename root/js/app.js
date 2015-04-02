@@ -12,7 +12,7 @@ app.factory("_backend", function() {
      *   from server. e.g. packets?node=10&ch=12
      */
     getData: function(pathQuery) {
-      var url = "http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
+      var url = ""//http://"+_backend.domain+":"+_backend.port+"/"+pathQuery;
       console.log("request: " + url);
       return $http.get(url).then(
         function(response) {
@@ -106,6 +106,45 @@ app.controller("selectionCtrl", ["$scope", "$http", "_backend", "_nodes", "_chan
  */
 app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backend",
     function($scope, $http, $interval, $timeout, _backend) {
+  /**
+   * Get all nodes from server and set them all inactive
+   */
+  $scope.getNodes = function() {
+    var url = "nodes";
+    _backend.getData(url).then(function(nodes) {
+      _nodes.nodes = nodes;
+      //add isActive attribute to each node
+      for (var i = 0; i < _nodes.nodes.length; ++i) {
+        _nodes.nodes[i].isActive = false;
+      }
+      $scope.nodes = _nodes.nodes;
+      //set selected node as active then query server for channels
+      //limit the number of active nodes to 1. The only time there is no
+      //active node is at start up
+      scope.nodes.toggle = function(node) {
+        for (var i = 0; i < $scope.nodes.length; ++i) {
+          $scope.nodes[i].isActive = false;
+          if ($scope.nodes[i].node === node.node) {
+            $scope.nodes[i].isActive = true;
+          }
+        }
+        $scope.getChannels();
+      }
+      //clear cached channels on node refresh
+      $scope.channels = [];
+    });
+  };
+  /**
+   * get the active node in the list of all nodes
+   * @return $scope.node object
+   */
+  function getActiveNode() {
+    for (var i = 0; i < $scope.nodes.length; ++i) {
+      if ($scope.nodes[i].isActive) {
+        return $scope.nodes[i];
+      }
+    }
+  }
   /**
    * get the active channels in the list of all channels
    * @return list of $scope.channel object
@@ -307,7 +346,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_backen
   })();
 }]);
 app.controller("formCtrl", ["$scope", "_backend", function($scope, _backend) {
-  //$scope.nodes = 
+  //$scope.nodes = h
 }])
 /*
  * controller used to set/get domain of scandalous backend
