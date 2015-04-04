@@ -52,18 +52,6 @@ app.factory("_nodes", function(_backend) {
         //list of node objects to cache nodes from backend
         data: [],
         /**
-         * Get all nodes from server and set them all inactive
-         */
-        getNodes: function() {
-            _backend.getData("nodes").then(function(nodes) {
-                this.data = nodes
-                //add isActive attribute to each node
-                for (var i = 0; i < this.data.length; ++i) {
-                    this.data[i].isActive = false
-                }
-            })
-        },
-        /**
          * set selected node as active
          * limit the number of active nodes to 1. The only time there is no
          * active node is at start up
@@ -90,14 +78,14 @@ app.factory("_nodes", function(_backend) {
             
     }
 })
-app.factory("_channels", function(_backend) {
+app.factory("_channels", function(_backend, _nodes) {
     return {
         data: [],
         /**
          * Get all channels from server and set them all inactive
          */
         getChannels: function() {
-            var url = "nodes/"+getActiveNode().node+"/channels"
+            var url = "nodes/"+_nodes.getActiveNode.node+"/channels"
             _backend.getData(url).then(function(channels) {
                 this.data = channels
                 //add isActive attribute to each channel
@@ -111,7 +99,7 @@ app.factory("_channels", function(_backend) {
          * inactive otherwise. limit number of active channels to 2
          */
         toggle: function(channel) {
-            var activeChannels = getActiveChannels()
+            var activeChannels = this.getActiveChannels()
             //allow max of 2 selected channels
             if (activeChannels.length === 2) {
                 for (var i = 0; i < activeChannels.length; ++i) {
@@ -151,7 +139,7 @@ app.factory("_format", function() {
          * @param dateTime dateTime string YYYY-MM-DDTHH:mm:ss
          * @return time in the format HH:mm:ss
          */
-        parseTime: function(dateTime) {
+        formatTime: function(dateTime) {
             var parsedDate = new Date(dateTime)
             return addPadding(parsedDate.getHours())+":"+
                 addPadding(parsedDate.getMinutes())+"."+
@@ -197,7 +185,7 @@ app.factory("_chart", function(_format) {
          * @param columns the axes and data to be plotted x, y1, y2
          * @return the chart that can be attached to the view
          */
-        function renderChart(columns) {
+        renderChart: function(columns) {
             var axes = {}
             var axis = {
                 x: {
@@ -205,7 +193,7 @@ app.factory("_chart", function(_format) {
                     tick: {
                         //show time as HH:mm:ss
                         format: function(x) {
-                            return _format.parseTime(x)
+                            return _format.formatTime(x)
                         },
                     }
                 }
@@ -247,7 +235,8 @@ app.factory("_data", function() {
          * remove duplicates based on time per channel.
          * @param node the node.node selected
          * @param channels list of channel.channel values selected
-         * @return list of lists of channel data ordered by channel
+         * @return list of lists of channel data partitioned by channel ordered
+         *      by descending time
          */
         getData: function(node, channel) {
             var parsedPackets = [];
@@ -271,80 +260,53 @@ app.factory("_data", function() {
             })
             return parsedPackets;
         },
+
     }
 })
-        /**
-         * refresh chart, used only when active channels change as the whole graph
-         * needs to be re-rendered.
-         */
-        function refreshChart() {
-            var columns = [["x"]]
-            //add new y axis data
-            var activeChannels = getActiveChannels()
-            for (var i = 0; i < activeChannels.length; ++i) {
-                columns.push([activeChannels[i].value])
-            }
-            renderChart(columns)
+/**
+ * CONTROLLERS
+ */
+app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
+    /**
+     * update cached nodes from the backend
+     */
+    $scope.updateNodes = function() {
+        _backend.getData("nodes").then(function(nodes) {
+            _nodes.data = nodes
+            $scope.nodes = _nodes.data
+        })
+    }
+    $scope.toggle = function(node) {
+        _nodes.toggle(node)
+        var url = "nodes/"+_nodes.getActiveNode().node+"/channels"
+        _backend.getData(url).then(function(channels) {
+            _channels.data = channels
         }
+    }
+    function init() {
+        console.log("gettingnodes")
+        $scope.updateNodes()
+    }
+    init()
+    $scope.test = function() {
+        _nodes.data.push({node: 5, device: "shit"})
+        console.log(_nodes.data)
+    }
+})
+app.controller("channelCtrl", function($scope, _nodes, _channels) {
+    $scope.getChannels = function() {
+        _nodes.getChannels()
+        $scope.channels = _channels.data
+    }
+    $scope.toggle = function(channel) {
+        _channels.toggle(channel)
+        $scope.channels = _channels.data
+    }
+    $scope.test = function() {
+        _nodes.data.push({node: 99, device: "fuck"})
+    }
+})
 
-
-        /**
-         * Gets packets from server and update channel reading and plot new values to graph
-         */
-        function getValues() {
-            var activeChannels = getActiveChannels()
-            //do not get new values if either node or channel are not selected
-            if (getActiveNode !== null && activeChannels.length > 0) {
-                var columns = []
-                var url = "packets?node="+getActiveNode().node+"&limit="+$scope.limit*5
-                _backend.getData(url).then(function(allPackets) {
-                    for (var i = 0; i < activeChannels.length; ++i) {
-                        //filter packets by channel and remove duplicates based on time
-                        var currPacketTime = ""
-                        var packets = allPackets.filter(function(element) {
-                            if (activeChannels[i].channel === element.channel && currPacketTime !== element.time) {
-                                currPacketTime = element.time
-                                return true
-                            } else {
-                                return false
-                            }
-                        })
-                        var data = []
-                        //add x axis time data in columns[0]
-                        if (columns.length === 0) {
-                            var timezoneOffset = new Date().getTimezoneOffset() * 60*1000
-                            data.push("x")
-                            for (var j = Math.min(packets.length, $scope.limit); j > 0; --j) {
-                                data[j] = new Date(packets[j - 1].time).valueOf() + timezoneOffset
-                            }
-                            columns.push(data)
-                            data = []
-                        }
-                        //get a subset of values for chart
-                        data.push(activeChannels[i].value)
-                        for (var j = Math.min(packets.length, $scope.limit); j > 0; --j) {
-                            data[j] = parseFloat(packets[j - 1].data.toFixed(2))
-                        }
-                        columns.push(data)
-                    }
-                    //plot new values to chart
-                    $scope.chart.data = {columns: columns}
-                })
-            }
-        }
-
-        //init
-        (function() {
-            //initial max limit of data points on chart
-            $scope.limit = 50
-            //get all nodes
-            $scope.getNodes()
-            //start task to get realtime value every second
-            $interval(getValues, 1000)
-            //init chart
-            renderChart([["x", 0, 1000, 2000],["data", 50, 100, 50],["data2", 0, 1, 2]])
-        })()
-    }])
 app.controller("formCtrl", ["$scope", "_backend", function($scope, _backend) {
     //$scope.nodes = h
 }])
@@ -353,23 +315,22 @@ app.controller("formCtrl", ["$scope", "_backend", function($scope, _backend) {
  */
 app.controller("domainCtrl", ["$scope", "_backend",
         function($scope, _backend) {
-            $scope.domain = _backend.domain
-            //sets domain of backend in _backend to given domain
-            $scope.setDomain = function(domain) {
-                _backend.domain = domain
-                console.log("domain changed to " + _backend.domain)
-            }
-        }])
+    $scope.domain = _backend.domain
+    //sets domain of backend in _backend to given domain
+    $scope.setDomain = function(domain) {
+        _backend.domain = domain
+        console.log("domain changed to " + _backend.domain)
+    }
+}])
 
 /*
  * controller used to get/set port of scandalous backend
  */
-app.controller("portCtrl", ["$scope", "_backend",
-        function($scope, _backend) {
-            $scope.port = _backend.port
-            //sets port of backend in _backend to given port
-            $scope.setPort = function(port) {
-                _backend.port = port
-                console.log("port changed to " + _backend.port)
-            }
-        }])
+app.controller("portCtrl", ["$scope", "_backend", function($scope, _backend) {
+    $scope.port = _backend.port
+    //sets port of backend in _backend to given port
+    $scope.setPort = function(port) {
+        _backend.port = port
+        console.log("port changed to " + _backend.port)
+    }
+}])
