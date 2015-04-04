@@ -2,57 +2,116 @@
 <html lang="en">
 
 <head>
-<title>Scandalous</title>
-<meta charset="utf-8">
-<!-- ensure proper rendering and touch zooming on devices -->
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scandalous</title>
+    <meta charset="utf-8">
+    <!-- ensure proper rendering and touch zooming on devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- jquery for bootstrap -->
-<script src="js/jquery-1.11.2.js"></script>
+    <!-- jquery for bootstrap -->
+    <script src="js/jquery-1.11.2.js"></script>
 
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="css/bootstrap/css/bootstrap.min.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap/css/bootstrap.min.css">
 
-<!-- Optional theme -->
-<link rel="stylesheet" href="css/bootstrap/css/bootswatch.cyborg.bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap/css/bootswatch.cyborg.bootstrap.min.css">
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="css/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="css/bootstrap/js/bootstrap.min.js"></script>
 
-<!-- angular -->
-<script src="js/angular.min.js"></script>
+    <!-- angular -->
+    <script src="js/angular.min.js"></script>
 
-<!-- load c3.css -->
-<link href="js/c3-0.4.9/c3.css" rel="stylesheet" type="text/css"/>
+    <!-- load c3.css -->
+    <link href="js/c3-0.4.9/c3.css" rel="stylesheet" type="text/css"/>
 
-<!-- load d3.js before c3.js since c3 depends on d3 -->
-<script src="js/d3/d3.js"></script>
-<script src="js/c3-0.4.9/c3.js"></script>
+    <!-- load d3.js before c3.js since c3 depends on d3 -->
+    <script src="js/d3/d3.js"></script>
+    <script src="js/c3-0.4.9/c3.js"></script>
 
-<!-- load handlebars.js -->
-<script src="js/handlebars-v3.0.0.js"></script>
+    <!-- load handlebars.js -->
+    <script src="js/handlebars-v3.0.0.js"></script>
 
-<!-- additional CSS -->
-<link rel="stylesheet" type="text/css" href="css/main.css"/>
-<link rel="stylesheet" type="text/css" href="css/navbar.css"/>
-<link rel="stylesheet" type="text/css" href="css/c3custom.css"/>
+    <!-- additional CSS -->
+    <link rel="stylesheet" type="text/css" href="css/main.css"/>
+    <link rel="stylesheet" type="text/css" href="css/navbar.css"/>
+    <link rel="stylesheet" type="text/css" href="css/c3custom.css"/>
 </head>
 
 <body ng-app="myApp">
 
-<div ng-controller="nodeCtrl">
-    <ul ng-repeat="node in nodes">
-        <li>{{node.node}} {{node.device}}</li>
-        <button type="button" class="btn btn-warning" ng-click="test()"></button>
-    </ul>
-</div><!-- ng-controller -->
-<div ng-controller="channelCtrl">
-    <button type="button" class="btn btn-default" ng-click="test()"></button>
-</div>
+    <!-- Navigation -->
+    <!--<div ng-include="'navbar-template.html'"></div>-->
 
-<!-- javascript application and controllers -->
-<script src="js/app.js"></script>
-<script src="js/directives.js"></script>
+    <!-- Content -->
+    <div class="container-fluid">
 
+      <!-- Node and Channel lists  -->
+      <div class="row">
+          <!-- node list -->
+          <div class="col-md-2">
+              <div ng-include="'node-list-template.html'"></div>
+          </div>
+
+          <!-- Channel list  -->
+          <div class="col-md-2">
+              <div ng-include="'channel-list-template.html'"></div>
+          </div>
+
+          <!-- chart + live channel value -->
+          <div class="col-md-8">
+            
+              <!-- chart -->
+              <!--<div ng-include="'chart-template.html'"></div>-->
+
+              <!-- live channel value -->
+              <!--<div ng-include="'channel-value-template.html'"></div>-->
+          
+          </div><!-- graph column -->
+        
+      </div><!-- row -->
+
+              
+    </div><!-- /.container -->
+
+    <!-- javascript application and directives -->
+    <script src="js/app.js"></script>
+    <script src="js/directives.js"></script>
+
+          <!-- node/channel submission form -->
+<!--          <div class="">
+            <!-- Single button for node selection-->
+<!--            <div class="btn-group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                Node <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Action</a></li>
+              </ul>
+            </div>
+            <!-- Single button for channel selection-->
+<!--            <div class="btn-group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                Channel <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Action</a></li>
+              </ul>
+            </div>
+            <div class="input-group">
+              <span class="input-group-addon">Data</span>
+              <input type="number" class="form-control" placeholder="1000">
+            </div>
+          </div>
+
+        </div><!-- node/channel column -->
+
+<!-- channel data display limit -->
+<!--            <div class="panel panel-default">
+              <div class="panel-body">
+                <label>Limit:</label><input type="number" class="form-control" ng-model="limit">
+              </div>
+            </div>
+-->
 </body>
 </html>

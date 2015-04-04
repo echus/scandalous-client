@@ -271,20 +271,45 @@ app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
      * update cached nodes from the backend
      */
     $scope.updateNodes = function() {
+        var a
         _backend.getData("nodes").then(function(nodes) {
+            //set all nodes as inactive
+            for (var i = 0; i < nodes.length; ++i) {
+                nodes[i].isActive = false
+            }
+            a = nodes
             _nodes.data = nodes
             $scope.nodes = _nodes.data
+            //clear cached channels as no nodes are selected
+//            _channels.data = []
+            console.log(_nodes.data)
+            console.log(a)
         })
+        console.log(_nodes.data)
+        console.log(a)
     }
+    /**
+     * change selected node and update cached channels from backend
+     * based on selected node
+     */
     $scope.toggle = function(node) {
+        console.log(_channels.data)
         _nodes.toggle(node)
         var url = "nodes/"+_nodes.getActiveNode().node+"/channels"
         _backend.getData(url).then(function(channels) {
+            //set all channels as inactive
+            for (var i = 0; i < channels.length; ++i) {
+                channels[i].isActive = false
+            }
             _channels.data = channels
-        }
+            console.log(_channels.data)
+        })
     }
+    /**
+     * initialisation consists of:
+     * gettting all available nodes from backend
+     */
     function init() {
-        console.log("gettingnodes")
         $scope.updateNodes()
     }
     init()
@@ -294,6 +319,7 @@ app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
     }
 })
 app.controller("channelCtrl", function($scope, _nodes, _channels) {
+        $scope.channels = _channels.data
     $scope.getChannels = function() {
         _nodes.getChannels()
         $scope.channels = _channels.data
@@ -302,8 +328,13 @@ app.controller("channelCtrl", function($scope, _nodes, _channels) {
         _channels.toggle(channel)
         $scope.channels = _channels.data
     }
+    function init() {
+    }
+    init()
     $scope.test = function() {
-        _nodes.data.push({node: 99, device: "fuck"})
+        console.log($scope.channels)
+        console.log(_channels.data)
+    $scope.channels = _channels.data
     }
 })
 
