@@ -6,6 +6,9 @@ app.factory("_backend", function($http) {
         domain: "localhost",
         //default port of scadalous backend
         port: "80/backend",
+        url: function() {
+            return "http://"+this.domain+":"+this.port+"/"
+        },
         /**
          * performs HTTP GET and returns data from server.
          * @param pathQuery path after / and query required to locate resource
@@ -266,18 +269,17 @@ app.factory("_data", function() {
 /**
  * CONTROLLERS
  */
-app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
+app.controller("nodeCtrl", function($scope, $http, _backend, _nodes, _channels) {
     /**
      * update cached nodes from the backend
      */
+    /*
     $scope.updateNodes = function() {
-        var a
         _backend.getData("nodes").then(function(nodes) {
             //set all nodes as inactive
             for (var i = 0; i < nodes.length; ++i) {
                 nodes[i].isActive = false
             }
-            a = nodes
             _nodes.data = nodes
             $scope.nodes = _nodes.data
             //clear cached channels as no nodes are selected
@@ -288,6 +290,25 @@ app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
         console.log(_nodes.data)
         console.log(a)
     }
+    */
+    $scope.updateNodes = function() {
+        $http.get(_backend.url()+"nodes").
+        success(function(nodes) {
+            console.log(nodes)
+            //set all nodes as inactive
+            for (var i = 0; i < nodes.length; ++i) {
+                nodes[i].isActive = false
+            }
+            _nodes.data = nodes
+            $scope.nodes = _nodes.data
+        }).
+        error(function(data, status) {
+            console.log(status)
+            console.log(data)
+        })
+    }
+
+
     /**
      * change selected node and update cached channels from backend
      * based on selected node
@@ -296,6 +317,18 @@ app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
         console.log(_channels.data)
         _nodes.toggle(node)
         var url = "nodes/"+_nodes.getActiveNode().node+"/channels"
+        $http.get(_backend.url()+url).
+            success(function(channels) {
+                //set all channels as inactive
+                for (var i = 0; i < channels.length; ++i) {
+                    channels[i].isActive = false
+                }
+                _channels.data = channels
+            })
+        console.log(_channels.data)
+
+        /*
+        _channels.data = [{channel: 6}]
         _backend.getData(url).then(function(channels) {
             //set all channels as inactive
             for (var i = 0; i < channels.length; ++i) {
@@ -304,6 +337,7 @@ app.controller("nodeCtrl", function($scope, _backend, _nodes, _channels) {
             _channels.data = channels
             console.log(_channels.data)
         })
+        */
     }
     /**
      * initialisation consists of:
