@@ -3,9 +3,9 @@ var app = angular.module("myApp", []);
 app.factory("_data", function() {
   return {
     //default domain of scandalous backend
-    domain: "0.0.0.0",
+    domain: "localhost",
     //default port of scadalous backend
-    port: "8080",
+    port: "80/backend",
   };
 });
 
@@ -224,7 +224,7 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     //do not get new values if either node or channel are not selected
     if (getActiveNode !== null && activeChannels.length > 0) {
       var columns = [];
-      var url = "packets?node="+getActiveNode().node+"&limit="+$scope.limit*5;
+      var url = "packets?node="+getActiveNode().node+"&limit="+$scope.limit*50;
       getData(url).then(function(allPackets) {
         for (var i = 0; i < activeChannels.length; ++i) {
           //filter packets by channel and remove duplicates based on time
@@ -260,9 +260,64 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       });
     }
   }
+    $scope.getFormChannels = function() {
+        var url = "nodes/"+$scope.form.node.node+"/channels"
+        getData(url).then(function(channels) {
+            $scope.form.channels = channels
+        })
+    }
+    /**
+     * send data to backend
+     */
+    $scope.sendData = function() {
+        if (typeof $scope.form.node === "undefined") {
+            $scope.form.feedback = "Node not selected"
+        } else if (typeof $scope.form.channel === "undefined") {
+            $scope.form.feedback = "Channel not selected"
+        } else if (typeof $scope.form.data === "undefined") {
+            $scope.form.feedback = "Data not entered"
+        } else {
+            var url = "http://"+_data.domain+":"+_data.port+"/packets/outbound"
+            var msg = {
+                node: $scope.form.node,
+                channel: $scope.form.channel,
+                data: $scope.form.data,
+                msg_type: "I DON'T KNOW WHAT TO DO WITH YOU"
+            }
+            $http.post(url, msg).
+                success(function(data, status) {
+                    if (status === 200) {
+                        $scope.form.feedback = data
+                    } else if (status === 400) {
+                        $scope.form.feedback = data.error
+                    }
+                }).
+                error(function(data, status) {
+                    $scope.form.feedback = status+" "+data
+                })
+        }
 
+    }
+    function renderMap() {
+        var map = new OpenLayers.Map("mapdiv");
+        var mapnik = new OpenLayers.Layer.OSM();
+        map.addLayer(mapnik);
+
+        var lonlat = new OpenLayers.LonLat(-1.788, 53.571).transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator
+          );
+
+        var zoom = 13;
+
+        var markers = new OpenLayers.Layer.Markers( "Markers" );
+        map.addLayer(markers);
+        markers.addMarker(new OpenLayers.Marker(lonlat));
+
+        map.setCenter(lonlat, zoom);
+    }
   //init
-  (function() {
+  function init() {
     //initial max limit of data points on chart
     $scope.limit = 50;
     //get all nodes
@@ -271,7 +326,12 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
     $interval(getValues, 1000);
     //init chart
     renderChart([["x", 0, 1000, 2000],["data", 50, 100, 50],["data2", 0, 1, 2]]);
-  })();
+    //create form object to hold form values
+    $scope.form = {};
+    //init map
+    renderMap();
+  }
+  init();
 }]);
 
 /*

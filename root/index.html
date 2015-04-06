@@ -36,6 +36,10 @@
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/navbar.css"/>
   <link rel="stylesheet" type="text/css" href="css/c3custom.css"/>
+
+    <!-- load openlayers -->
+    <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+
 </head>
 
 <body ng-app="myApp">
@@ -83,7 +87,12 @@
       </div><!-- graph column -->
     
     </div><!-- row -->
-
+    <div class="row">
+        <div ng-include="'form-template.html'"></div>
+    </div>
+    <div class="row">
+        <div ng-include="'map-template.html'"></div>
+    </div>
             
   </div><!-- /.container -->
   </div><!-- ng-controller -->
