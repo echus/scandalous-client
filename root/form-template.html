@@ -1,5 +1,5 @@
 <!-- node/channel submission form -->
-<div class="">
+<div class="panel panel-default">
     <!-- Single button for node selection-->
     <span class="nullable">
         <select ng-model="form.node"
@@ -21,5 +21,5 @@
         Data: <input type="number" ng-model="form.data" placeholder="1000"/>
         <input type="submit" ng-click="sendData()" value="Send"/>
     </form>
-    <p class="text-primary">{{form.feedback}}</p>
+    <p class="text-warning">{{form.feedback}}</p>
 </div>

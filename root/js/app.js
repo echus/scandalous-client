@@ -1,4 +1,4 @@
-var app = angular.module("myApp", []);
+var app = angular.module("myApp", ["openlayers-directive"]);
 
 app.factory("_data", function() {
   return {
@@ -25,22 +25,22 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       for (var i = 0; i < $scope.nodes.length; ++i) {
         $scope.nodes[i].isActive = false;
       }
-      //set selected node as active then query server for channels
-      //limit the number of active nodes to 1. The only time there is no
-      //active node is at start up
-      $scope.nodes.toggle = function(node) {
-        for (var i = 0; i < $scope.nodes.length; ++i) {
-          $scope.nodes[i].isActive = false;
-          if ($scope.nodes[i].node === node.node) {
-            $scope.nodes[i].isActive = true;
-          }
-        }
-        $scope.getChannels();
-      }
-      //clear cached channels on node refresh
-      $scope.channels = [];
     });
   };
+  //set selected node as active then query server for channels
+  //limit the number of active nodes to 1. The only time there is no
+  //active node is at start up
+  $scope.toggleNodes = function(node) {
+    for (var i = 0; i < $scope.nodes.length; ++i) {
+      $scope.nodes[i].isActive = false;
+      if ($scope.nodes[i].node === node.node) {
+        $scope.nodes[i].isActive = true;
+      }
+    }
+    $scope.getChannels();
+  }
+  //clear cached channels on node refresh
+  $scope.channels = [];
   /**
    * get the active node in the list of all nodes
    * @return $scope.node object
@@ -76,29 +76,29 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       for (var i = 0; i < $scope.channels.length; ++i) {
         $scope.channels[i].isActive = false;
       }
-      //set active channel as inactive, vice versa, then refresh chart to
-      //plot new data that corresponds to change in active channels
-      $scope.channels.toggle = function(channel) {
-        var activeChannels = getActiveChannels();
-        //allow max of 2 selected channels
-        if (activeChannels.length === 2) {
-          for (var i = 0; i < activeChannels.length; ++i) {
-            if (activeChannels[i].channel === channel.channel) {
-              activeChannels[i].isActive = !channel.isActive;
-              console.log(activeChannels[i].channel);
-            }
-          }
-        } else {
-          for (var i = 0; i < $scope.channels.length; ++i) {
-            if ($scope.channels[i].channel === channel.channel) {
-              $scope.channels[i].isActive = !$scope.channels[i].isActive;
-            }
-          }
-        }
-        refreshChart();
-      }
     });
   };
+  //set active channel as inactive, vice versa, then refresh chart to
+  //plot new data that corresponds to change in active channels
+  $scope.toggleChannels = function(channel) {
+    var activeChannels = getActiveChannels();
+    //allow max of 2 selected channels
+    if (activeChannels.length === 2) {
+      for (var i = 0; i < activeChannels.length; ++i) {
+        if (activeChannels[i].channel === channel.channel) {
+          activeChannels[i].isActive = !channel.isActive;
+          console.log(activeChannels[i].channel);
+        }
+      }
+    } else {
+      for (var i = 0; i < $scope.channels.length; ++i) {
+        if ($scope.channels[i].channel === channel.channel) {
+          $scope.channels[i].isActive = !$scope.channels[i].isActive;
+        }
+      }
+    }
+    refreshChart();
+  }
   /**
    * render chart used when there are changes to selected channels to be drawn
    * or during initialization
@@ -124,7 +124,6 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       //label and show axes appropriately
       axis[labels[i - 1]] = {label: columns[i][0], show: true};
     }
-    console.log(axes);
     $scope.chart = {
       data: {
         type: "line",
@@ -299,22 +298,24 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
 
     }
     function renderMap() {
-        var map = new OpenLayers.Map("mapdiv");
-        var mapnik = new OpenLayers.Layer.OSM();
-        map.addLayer(mapnik);
-
-        var lonlat = new OpenLayers.LonLat(-1.788, 53.571).transform(
-            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
-            new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator
-          );
-
-        var zoom = 13;
-
-        var markers = new OpenLayers.Layer.Markers( "Markers" );
-        map.addLayer(markers);
-        markers.addMarker(new OpenLayers.Marker(lonlat));
-
-        map.setCenter(lonlat, zoom);
+        angular.extend($scope, {
+            center: {
+                lat: 51.505,
+                lon: -0.09,
+                zoom: 8,
+                autodiscover: true
+            },
+            defaults: {
+                interactions: {
+                    mouseWheelZoom: true
+                },
+                controls: {
+                    zoom: false,
+                    rotate: false,
+                    attribution: false 
+                }
+            }
+        })
     }
   //init
   function init() {

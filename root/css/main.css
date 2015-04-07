@@ -28,12 +28,4 @@
   text-align: center;
 }
 
-/* map */
-#mapdiv {
-    width:350px;
-    height:250px;
-}
 
-div.olControlAttribution {
-    bottom:3px;
-}
