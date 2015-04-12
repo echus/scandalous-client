@@ -259,6 +259,18 @@ app.controller("mainCtrl", ["$scope", "$http", "$interval", "$timeout", "_data",
       });
     }
   }
+    /**
+      * @param input [{node, channel}]
+      */
+/*
+    $scope.setChart = function(input) {
+        for (var i = 0; i < input.length; ++i) {
+            var node = input[i].node
+            var channel = input[i].channel
+            
+        }
+    }
+*/
     $scope.getFormChannels = function() {
         var url = "nodes/"+$scope.form.node.node+"/channels"
         getData(url).then(function(channels) {
