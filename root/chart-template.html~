@@ -1,0 +1,5 @@
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div xychart ng-model="chart" id="chart">{{setChart(50, 1)}}</div>
+    </div><!-- /.panel-body -->
+</div><!-- /.panel panel-default -->

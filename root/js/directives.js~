@@ -1,5 +1,5 @@
 
-var integrator = angular.module('scandalousApp');
+var integrator = angular.module('myApp');
 
 // Directive for creating a c3 xy chart
 //

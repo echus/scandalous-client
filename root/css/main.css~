@@ -1,0 +1,35 @@
+/* Node selection panels */
+
+.nav-pills > li a:hover,
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  background-color: orange;
+} 
+
+
+
+/* Main panels */
+
+#chart-cont {
+  max-width: 600px;
+  overflow-x: scroll;
+}
+
+#value-display {
+  font-size: 2em;
+}
+#value-timestamp {
+  font-size: 1.5em;
+}
+
+.panel-title {
+  font-size: 1.3em;
+  text-align: center;
+}
+
+/* map */
+.map {
+    height: 400px;
+    width: 100%;
+}
