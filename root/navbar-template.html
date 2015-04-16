@@ -6,7 +6,7 @@
         </button>
       </div>
 
-      <div class="collapse navbar-collapse navbar-menubuilder">
+      <div class="collapse navbar-collapse navbar-menubuilder" ng-controller="BackendCtrl">
         <!-- Nav tabs -->
         <ul class="nav navbar-nav navbar-left">
             <li><a href="#">MPPT</a>
@@ -18,12 +18,12 @@
         <!-- Domain/port settings -->
         <form class="navbar-form navbar-right" role="search">
           <div class="form-group">
-            <input type="text" class="form-control" ng-controller="domainCtrl" ng-model="domain" ng-change="setDomain(domain)" name="domain" placeholder="Domain">
+            <input type="text" class="form-control" ng-model="domain" ng-change="setDomain(domain)" name="domain" placeholder="Domain">
           </div>
           <div class="form-group">
-            <input type="text" class="form-control" ng-controller="portCtrl" ng-model="port" ng-change="setPort(port)" name="port" placeholder="Port">
+            <input type="text" class="form-control" ng-model="port" ng-change="setPort(port)" name="port" placeholder="Port">
           </div>
-          <button type="button" class="btn btn-warning" ng-click="getNodes()">
+          <button type="button" class="btn btn-warning" ng-click="updateNodes()">
             <span class="glyphicon glyphicon-refresh"></span>
           </button>
         </form>

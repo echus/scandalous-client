@@ -15,10 +15,19 @@ services.factory("Backend", function() {
     };
 });
 
-services.factory("Selection", function() {
+services.factory("Selection", function($rootScope, Data) {
     return {
         //list of node objects to cache nodes from backend
         nodes: [],
+
+        setNodes: function(nodes) {
+            //set all nodes as inactive
+            for (var i = 0; i < nodes.length; ++i) {
+                nodes[i].isActive = false;
+            }
+            this.nodes = nodes;
+            $rootScope.$broadcast("nodes.update");
+        },
         /**
          * set selected node as active
          * limit the number of active nodes to 1. The only time there is no
@@ -45,6 +54,14 @@ services.factory("Selection", function() {
         },
         //list of channel objects to cache channels from backend
         channels: [],
+
+        setChannels: function(channels) {
+            //set all channels as inactive
+            for (var i = 0; i < channels.length; ++i) {
+                channels[i].isActive = false;
+            }
+            this.channels = channels;
+        },
         /**
          * set given channel as active if it is currently inactive,
          * inactive otherwise. limit number of active channels to 2
@@ -65,6 +82,17 @@ services.factory("Selection", function() {
                     }
                 }
             }
+            var activeSelection = [];
+            var activeNode = this.getActiveNode();
+            angular.forEach(this.getActiveChannels(), function(value, key) {
+                activeSelection.push({
+                    node: activeNode.node,
+                    device: activeNode.device,
+                    channel: value.channel,
+                    value: value.value
+                });
+            });
+            Data.setActiveSelection(activeSelection);
         },
         /**
          * get the active channels in the list of all channels
@@ -85,7 +113,44 @@ services.factory("Selection", function() {
 
 services.factory("Data", function() {
     return {
+        //active node and channels to query backend with
+        /*
+        [{
+            node:1,
+            device:"bat",
+            channel:1,
+            value:"curr"
+        }]
+        */
+        activeSelection: [],
+        setActiveSelection: function(selections) {
+            this.activeSelection = selections;
+            console.log(this.activeSelection);
+        },
+        //packet data from backend based on activeSelection
         data: [],
+        //maximum number of packets to store in data
+        limit: 30,
+        /**
+         * Given packets of a single node and channel from the backend,
+         * this function removes duplicates based on time and
+         * reverses the order to ascending time order
+         */
+        filterPackets: function(packets) {
+            //remove packets with duplicate times
+            var currTime = "";
+            packets = packets.filter(function(element) {
+                if (element.time === currTime) {
+                    currTime = element.time;
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            //order packets by ascending time (newest last)
+            packets.reverse();
+            this.data.push(packets);
+        }
 
     };
 });
