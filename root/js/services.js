@@ -6,8 +6,14 @@ services.factory("Backend", function() {
     return {
         //default domain of scandalous backend
         domain: "localhost",
+        setDomain: function(domain) {
+            this.domain = domain;
+        },
         //default port of scadalous backend
         port: "80/backend",
+        setPort: function(port) {
+            this.port = port;
+        },
         //get URL of scandalous backend
         url: function() {
             return "http://"+this.domain+":"+this.port+"/";
@@ -61,6 +67,7 @@ services.factory("Selection", function($rootScope, Data) {
                 channels[i].isActive = false;
             }
             this.channels = channels;
+            $rootScope.$broadcast("channels.update");
         },
         /**
          * set given channel as active if it is currently inactive,
