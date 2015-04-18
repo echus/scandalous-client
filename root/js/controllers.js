@@ -30,11 +30,7 @@ ctrls.controller("BackendCtrl",
             console.log(data);
         })
     };
-
-    var init = function() {
-        $scope.updateNodes();
-    }
-    init();
+    $scope.updateNodes();
 });
 
 ctrls.controller("SelectionCtrl",
@@ -52,13 +48,12 @@ ctrls.controller("SelectionCtrl",
             "/channels";
         $http.get(Backend.url() + path).
         success(function(channels) {
-            console.log(channels);
             Selection.setChannels(channels);
             $scope.channels = Selection.channels;
         }).
         error(function(data, status) {
-            console.log(status)
-            console.log(data)
+            console.log(status);
+            console.log(data);
         });
     };
 
@@ -82,7 +77,7 @@ ctrls.controller("SelectionCtrl",
 });
 
 ctrls.controller("graphCtrl",
-        function($scope, $http, $attrs, $parse, Backend, Data) {
+        function($scope, $http, $attrs, $parse, $q, $interval, Backend, Data) {
 
     //active node and channels to query backend with
     var selections = [];
@@ -92,14 +87,16 @@ ctrls.controller("graphCtrl",
     var q = p($scope)
     console.log(q)
     */
+    //use hard set graph, parse nodes and channels
     if ($attrs.selections) {
         selections = $parse($attrs.selections)($scope);
+    //using dynamic graph, attach listener to Data.selections to update
+    //graph on node and channel changes
     } else {
         $scope.$on("selections.update", function(event) {
-        selections = Data.selections;
-        drawGraph();
-        console.log(selections)
-    })
+            selections = Data.selections;
+            drawGraph();
+        })
 
     }
     /*
@@ -116,8 +113,6 @@ ctrls.controller("graphCtrl",
             value:"volt"
         }
     ];*/
-    //http get in backgroup keeps appending data to chart
-
 
     //call draw graph is there's a change in selections
     var drawGraph = function() {
@@ -127,7 +122,7 @@ ctrls.controller("graphCtrl",
                 tick: {
                     //show time as HH:mm:ss
                     format: function(x) {
-                        return (x);
+                        return Data.formatTime(x);
                     },
                 }
             }
@@ -165,35 +160,51 @@ ctrls.controller("graphCtrl",
             }
         };
     }
-    /**
-     * set graph nodes and channels for graph with constant nodes and channels
-     */
-     /*
-    $scope.setGraph = function(selections) {
-        if (!this.selections) {
-            this.selections = selections;
-            $scope.drawGraph();
-        }
-    }*/
-
     drawGraph();
-    console.log($scope.chart)
+    $scope.limit = 5;
+    //http get in background keeps appending data to chart
+    var updateGraph = function() {
+        //columns (x, y1, y2) to be shown on graph and their data
+        var columns = [];
+        var requests = [];
+        angular.forEach(selections, function(value, key) {
+            var pathQuery = "packets?node="+value.node+
+                "&ch="+value.channel+
+                "&limit="+($scope.limit * 5);
+            requests.push(
+                $http.get(Backend.url() + pathQuery).
+                success(function(data) {
+                    data = Data.filterPackets(data, $scope.limit);
+                    //number of data points to display on graph
+                    var dataLimit = Math.min(data.length, $scope.limit);
+                    //add time data to columns if not added yet. time data must be
+                    //inserted at columns[0]
+                    if (columns.length === 0) {
+                        //var timezoneOffset = new Date().getTimezoneOffset() * 60*1000;
+                        var timeData = ["x"];
+                        for (var i = 0; i < dataLimit; ++i) {
+                            timeData.push(new Date(data[i].time).valueOf());// + timezoneOffset);
+                        }
+                        columns.push(timeData);
+                    }
+                    var channelData = [value.value];
+                    //add channel data to columns
+                    for (var i = 0; i < dataLimit; ++i) {
+                        channelData.push(parseFloat(data[i].data.toFixed(2)));
+                    }
+                    columns.push(channelData);
+                }).
+                error(function(data, status) {
+                    console.log(status);
+                    console.log(data);
+                })
+            );
+        });
+        //once data has been received and formatted, update the graph to show
+        //its new data
+        $q.all(requests).then(function() {
+            $scope.chart.data = {columns: columns};
+        })
+    }
+    $interval(updateGraph, 1000, 1);
 });
-/*
-controller: function($scope, $http, Backend) {
-
-            $scope.renderGraph = function() {
-                angular.forEach(arguments, function(value, key) {
-                    var path = "packets?node="+value.node+"&ch="+value.channel;
-                    $http.get(Backend.url() + path).
-                    success(function(data) {
-                        $scope.data.push(data);
-                    }).
-                    error(function(data, status) {
-                        console.log(status);
-                        console.log(data);
-                    });
-                });
-            };
-        },
-*/

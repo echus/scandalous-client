@@ -1,30 +1,33 @@
 <div class="panel panel-default">
-	<div class="panel-body">
-	<div class="row">
-asf
-		<div ng-controller="graphCtrl" selections='[{node:1,device:"bat",channel:2,value:"curr"},{node:2,device:"mat",channel:3,value:"volt"}]'>
-			
-			<div xychart ng-model="chart" id="chart"></div>
-		</div>
+    <div class="panel-body">
+        <div class="row">
+            <div ng-controller="graphCtrl">
+                <!-- limit of data points to plot on graph -->
+                <label>Limit:
+                    <input type="number" ng-model="limit" min="0">
+                </label>
+                <!-- C3 xy chart (graph) -->
+                <div xychart ng-model="chart" id="chart"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div ng-controller="graphCtrl" selections='[
+                {node:50,device:"Current Integrator",channel:1,value:"Voltage"},
+                {node:50,device:"Current Integrator",channel:5,value:"Samples"}
+            ]'>
+                <!-- limit of data points to plot on graph -->
+                <label>Limit:
+                    <input type="number" ng-model="limit" min="0">
+                </label>
 
-	</div>
-	<div class="row">
-	zzzzz
-		<div ng-controller="graphCtrl" selections='[{node:1,device:"pat",channel:2,value:"m/s"},{node:2,device:"zat",channel:3,value:"km"}]'>
-			
-			<div xychart ng-model="chart" id="chart1"></div>
-		</div>
-	</div>
-	<div class="row">
-		graph with dynamic selections
-		<div ng-controller="graphCtrl">
-			<div xychart ng-model="chart" id="chart2"></div>
-		</div>
-	</div>
-	
-	</div><!-- /.panel-body -->
+                <div xychart ng-model="chart" id="chart1"></div>
+            </div>
+
+        </div>
+
+    </div><!-- /.panel-body -->
 
 </div><!-- /.panel panel-default -->
 
-		
+        
 

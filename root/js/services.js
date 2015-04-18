@@ -134,30 +134,50 @@ services.factory("Data", function($rootScope) {
             this.selections = selections;
             $rootScope.$broadcast("selections.update");
         },
-        //packet data from backend based on activeSelection
-        data: [],
-        //maximum number of packets to store in data
-        limit: 30,
         /**
          * Given packets of a single node and channel from the backend,
          * this function removes duplicates based on time and
          * reverses the order to ascending time order
          */
-        filterPackets: function(packets) {
+        filterPackets: function(allPackets, limit) {
             //remove packets with duplicate times
             var currTime = "";
-            packets = packets.filter(function(element) {
-                if (element.time === currTime) {
+            var packets = allPackets.filter(function(element) {
+                if (element.time !== currTime) {
                     currTime = element.time;
                     return true;
                 } else {
                     return false;
                 }
             });
+            //take latest subset of data
+            packets.splice(limit, Number.MAX_VALUE)
             //order packets by ascending time (newest last)
             packets.reverse();
-            this.data.push(packets);
-        }
-
+            return packets;
+        },
+        /**
+         * Given a date in dateTime format, returns the time in 24hr format
+         * @param dateTime dateTime string YYYY-MM-DDTHH:mm:ss
+         * @return time in the format HH:mm:ss
+         */
+        formatTime: function(dateTime) {
+            /**
+             * prefix numbers in the range [0, 9] with "0"
+             * @param x number to be formatted
+             * @return number as a string
+             */
+            var addPadding = function(x) {
+                if (x < 10 && x >= 0) {
+                    return "0" + x
+                } else {
+                    return x
+                }
+            };
+            var parsedDate = new Date(dateTime)
+            return addPadding(parsedDate.getHours())+":"+
+                addPadding(parsedDate.getMinutes())+"."+
+                addPadding(parsedDate.getSeconds())
+        },
     };
 });
