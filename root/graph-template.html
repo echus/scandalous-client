@@ -1,0 +1,27 @@
+<div class="panel panel-default">
+	<div class="panel-body">
+		<div ng-controller="graphCtrl" selections='
+				[
+					{node:1,device:"bat",channel:2,value:"curr"},
+					{node:2,device:"mat",channel:3,value:"volt"}
+				]
+			'>
+			
+			<div xychart ng-model="chart" id="chart"></div>
+		</div>
+	</div><!-- /.panel-body -->
+
+</div><!-- /.panel panel-default -->
+
+	<div class="panel-body">
+		<div ng-controller="graphCtrl" selections='
+				[
+					{node:9,device:"zat",channel:8,value:"m/s"},
+					{node:7,device:"pat",channel:6,value:"km"}
+				]
+			'>
+			
+			<div xychart ng-model="chart" id="chart"></div>
+		</div>
+	</div><!-- /.panel-body -->
+
