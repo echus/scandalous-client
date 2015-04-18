@@ -22,7 +22,6 @@ ctrls.controller("BackendCtrl",
     $scope.updateNodes = function() {
         $http.get(Backend.url()+"nodes").
         success(function(nodes) {
-            console.log(nodes);
             Selection.setNodes(nodes);
             Selection.setChannels([]);
         }).
@@ -83,10 +82,15 @@ ctrls.controller("SelectionCtrl",
 });
 
 ctrls.controller("graphCtrl",
-        function($scope, $http, Backend) {
+        function($scope, $http, $attrs, Backend) {
 
     //active node and channels to query backend with
-    var selections = [
+    $scope.init = function() {
+        $scope.drawGraph();
+    };
+    $scope.init()
+
+    /*
         {
             node:1,
             device:"bat",
@@ -99,7 +103,7 @@ ctrls.controller("graphCtrl",
             channel:3,
             value:"volt"
         }
-    ];
+    ];*/
     //http get in backgroup keeps appending data to chart
 
 
@@ -119,7 +123,7 @@ ctrls.controller("graphCtrl",
         var axes = {};
         var columns = [["x"]];
         var labels = ['y', 'y2'];
-        angular.forEach(selections, function(value, key) {
+        angular.forEach($attr.selections, function(value, key) {
             //bind data to corresponding axes
             //{data1: 'y', data2: 'y2'}
             axes[value.value] = labels[key];
@@ -152,15 +156,15 @@ ctrls.controller("graphCtrl",
     /**
      * set graph nodes and channels for graph with constant nodes and channels
      */
+     /*
     $scope.setGraph = function(selections) {
-        if (selections) {
+        if (!this.selections) {
             this.selections = selections;
+            $scope.drawGraph();
         }
-    }
-    var init = function() {
-        $scope.setGraph();
-                    console.log(selections)
+    }*/
 
+    var init = function() {
         $scope.drawGraph();
     }
     init();
