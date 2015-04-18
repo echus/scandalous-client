@@ -82,14 +82,26 @@ ctrls.controller("SelectionCtrl",
 });
 
 ctrls.controller("graphCtrl",
-        function($scope, $http, $attrs, Backend) {
+        function($scope, $http, $attrs, $parse, Backend, Data) {
 
     //active node and channels to query backend with
-    $scope.init = function() {
-        $scope.drawGraph();
-    };
-    $scope.init()
+    var selections = [];
+    /*
+    console.log($attrs.selections)
+    var p = $parse($attrs.selections)
+    var q = p($scope)
+    console.log(q)
+    */
+    if ($attrs.selections) {
+        selections = $parse($attrs.selections)($scope);
+    } else {
+        $scope.$on("selections.update", function(event) {
+        selections = Data.selections;
+        drawGraph();
+        console.log(selections)
+    })
 
+    }
     /*
         {
             node:1,
@@ -108,7 +120,7 @@ ctrls.controller("graphCtrl",
 
 
     //call draw graph is there's a change in selections
-    $scope.drawGraph = function() {
+    var drawGraph = function() {
         var axis = {
             x: {
                 label: "Time",
@@ -123,7 +135,7 @@ ctrls.controller("graphCtrl",
         var axes = {};
         var columns = [["x"]];
         var labels = ['y', 'y2'];
-        angular.forEach($attr.selections, function(value, key) {
+        angular.forEach(selections, function(value, key) {
             //bind data to corresponding axes
             //{data1: 'y', data2: 'y2'}
             axes[value.value] = labels[key];
@@ -164,10 +176,8 @@ ctrls.controller("graphCtrl",
         }
     }*/
 
-    var init = function() {
-        $scope.drawGraph();
-    }
-    init();
+    drawGraph();
+    console.log($scope.chart)
 });
 /*
 controller: function($scope, $http, Backend) {

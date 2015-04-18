@@ -89,17 +89,17 @@ services.factory("Selection", function($rootScope, Data) {
                     }
                 }
             }
-            var activeSelection = [];
+            var selections = [];
             var activeNode = this.getActiveNode();
             angular.forEach(this.getActiveChannels(), function(value, key) {
-                activeSelection.push({
+                selections.push({
                     node: activeNode.node,
                     device: activeNode.device,
                     channel: value.channel,
                     value: value.value
                 });
             });
-            Data.setActiveSelection(activeSelection);
+            Data.updateSelections(selections);
         },
         /**
          * get the active channels in the list of all channels
@@ -118,7 +118,7 @@ services.factory("Selection", function($rootScope, Data) {
 
 });
 
-services.factory("Data", function() {
+services.factory("Data", function($rootScope) {
     return {
         //active node and channels to query backend with
         /*
@@ -129,10 +129,10 @@ services.factory("Data", function() {
             value:"curr"
         }]
         */
-        activeSelection: [],
-        setActiveSelection: function(selections) {
-            this.activeSelection = selections;
-            console.log(this.activeSelection);
+        selections: [],
+        updateSelections: function(selections) {
+            this.selections = selections;
+            $rootScope.$broadcast("selections.update");
         },
         //packet data from backend based on activeSelection
         data: [],
