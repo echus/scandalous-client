@@ -171,8 +171,7 @@ ctrls.controller("graphCtrl",
             var pathQuery = "packets?node="+value.node+
                 "&ch="+value.channel+
                 "&limit="+($scope.limit * 5);
-            requests.push(
-                $http.get(Backend.url() + pathQuery).
+            requests.push($http.get(Backend.url() + pathQuery).
                 success(function(data) {
                     data = Data.filterPackets(data, $scope.limit);
                     //number of data points to display on graph
@@ -197,8 +196,7 @@ ctrls.controller("graphCtrl",
                 error(function(data, status) {
                     console.log(status);
                     console.log(data);
-                })
-            );
+                }));
         });
         //once data has been received and formatted, update the graph to show
         //its new data
@@ -207,4 +205,38 @@ ctrls.controller("graphCtrl",
         })
     }
     $interval(updateGraph, 1000, 1);
+});
+
+ctrls.controller("valueCtrl",
+        function($scope, $http, $interval, Backend, Data) {
+
+    $scope.values = [];
+    var updateValue = function() {
+        //remove unused cached values
+        $scope.values.splice(-1, $scope.values.length - Data.selections.length);
+        angular.forEach(Data.selections, function(value, key) {
+            var pathQuery = "packets?node="+value.node+
+            "&ch="+value.channel+"&limit=1";
+            $http.get(Backend.url() + pathQuery).
+            success(function(data) {
+                $scope.values[key] = {
+                    channel: value.value,
+                    value: data[0].data,
+                    unit: Data.getUnit(value.value)
+                };
+                $scope.timestamp = Data.formatTime(data[0].time);
+            }).
+            error(function(data, status) {
+                console.log(status);
+                console.log(data);
+            });
+        })
+    };
+    $interval(updateValue, 1000, 0);
+});
+
+ctrls.controller("formCtrl",
+        function($scope, $http, Backend) {
+
+
 });

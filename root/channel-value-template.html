@@ -1,14 +1,12 @@
 <div class="panel panel-default">
-    <div class="panel-body">
+    <div class="panel-body" ng-controller="valueCtrl">
         <!-- all channel values -->
-        <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
-            <span ng-if="!$first">
-                <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
-            </span>
+        <p class="text-center" id="value-display" ng-repeat="value in values">
+            <strong>{{value.channel}}: {{value.value}} {{value.unit}}</strong>
         </p>
         <!-- timestamp for channel values -->
         <p class="text-center" id="value-timestamp">
-            {{parseTime(chart.data.columns[0][1])}}
+            {{timestamp}}
         </p>
     </div><!-- /.panel-body -->
 </div><!-- /.panel panel-default -->

@@ -179,5 +179,22 @@ services.factory("Data", function($rootScope) {
                 addPadding(parsedDate.getMinutes())+"."+
                 addPadding(parsedDate.getSeconds())
         },
+        /**
+         * Get unit for channel reading
+         * @param channel the channel name i.e. channel.value
+         * @return unit as a string
+         */
+        getUnit: function(channelName) {
+            if (channelName.search(/current/i) !== -1) {
+                return "A"
+            } else if (channelName.search(/voltage/i) !== -1) {
+                return "V"
+            } else if (channelName.search(/power/i) !== -1) {
+                return "W"
+            } else {
+                return "Unit"
+            }
+        },
+
     };
 });

@@ -44,11 +44,16 @@
         <div class="container-fluid">
             <div class="row">
 
-                <!-- Node and Channel lists  -->
                 <div class="col-md-4">
-                    <div ng-include="'selection-template.html'"></div>
+                    <div class="row">
+                        <!-- Node and Channel lists  -->
+                        <div ng-include="'selection-template.html'"></div>
+                    </div>
+                    <div class="row">
+                        <!-- channel value reading -->
+                        <div ng-include="'channel-value-template.html'"></div>
+                    </div>
                 </div>
-
                 <!-- graph -->
                 <div class="col-md-8">
                     <div ng-include="'graph-template.html'"></div>
