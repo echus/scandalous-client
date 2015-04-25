@@ -1,0 +1,30 @@
+<!-- node/channel submission form -->
+<div class="panel panel-default" ng-controller="formCtrl">
+    <div class="panel-heading">
+        <div class="panel-title">Backend</div>
+    </div>
+    <div class="panel-body">
+        <!-- Single button for node selection-->
+        <span class="nullable">
+            <select ng-model="node"
+                    ng-options="node.node+': '+node.device for node in nodes"
+                    ng-change="updateChannels(node)">
+                <option value="">-- choose node --</option>
+            </select>
+        </span>
+
+        <!-- Single button for channel selection-->
+        <span class="nullable">
+            <select ng-model="channel"
+                    ng-options="channel.channel+': '+channel.value for channel in channels">
+                <option value="">-- choose channel --</option>
+            </select>
+        </span>
+
+        <form novalidate class="simple-form">
+            Data: <input type="number" ng-model="data" placeholder="1000"/>
+            <input type="submit" ng-click="sendData()" value="Send"/>
+        </form>
+        <p class="text-warning">{{feedback}}</p>
+    </div>
+</div>

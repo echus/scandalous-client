@@ -238,5 +238,62 @@ ctrls.controller("valueCtrl",
 ctrls.controller("formCtrl",
         function($scope, $http, Backend) {
 
+    $scope.updateNodes = function() {
+        $http.get(Backend.url()+"nodes").
+        success(function(nodes) {
+            $scope.nodes = nodes;
+        }).
+        error(function(data, status) {
+            console.log(status);
+            console.log(data);
+        })
+    };
+    $scope.updateNodes();
 
+    $scope.updateChannels = function(node) {
+        var path = "nodes/"+node.node+"/channels"
+        $http.get(Backend.url() + path).
+        success(function(channels) {
+            $scope.channels = channels;
+        }).
+        error(function(data, status) {
+            console.log(status);
+            console.log(data);
+        })
+    };
+
+    /**
+     * send data to backend
+     */
+    $scope.sendData = function() {
+        if (!$scope.node) {
+            $scope.feedback = "Node not selected";
+        } else if (!$scope.channel) {
+            $scope.feedback = "Channel not selected";
+        } else if ($scope.data === undefined || $scope.data === null) {
+            $scope.feedback = "Data not entered";
+        } else {
+            var msg = {
+                node: $scope.node,
+                channel: $scope.channel,
+                data: $scope.data,
+                msg_type: "I DON'T KNOW WHAT TO DO WITH YOU"
+            };
+            $http.post(Backend.url() + "packets/outbound", msg).
+            success(function(data, status) {
+                $scope.feedback = status+" "+data;
+                /*
+                if (status === 200) {
+                    $scope.feedback = data
+                } else if (status === 400) {
+                    $scope.feedback = data.error
+                }
+                */
+            }).
+            error(function(data, status) {
+                $scope.feedback = status+" "+data
+            });
+        }
+
+    }
 });
