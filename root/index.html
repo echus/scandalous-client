@@ -29,6 +29,11 @@
         <script src="js/d3/d3.js"></script>
         <script src="js/c3-0.4.9/c3.js"></script>
 
+        <!-- load openlayers -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-sanitize.min.js"></script>
+        <script src="http://openlayers.org/en/v3.0.0/build/ol.js"></script>
+        <script src="js/angular-openlayers-directive/dist/angular-openlayers-directive.js"></script>
+
         <!-- additional CSS -->
         <link rel="stylesheet" type="text/css" href="css/main.css"/>
         <link rel="stylesheet" type="text/css" href="css/navbar.css"/>
@@ -69,6 +74,10 @@
                     <!-- live channel value -->
                     <div ng-include="'channel-value-template.html'"></div>
                 </div>
+            </div>
+            <div class="row">
+                <!-- map -->
+                <div ng-include="'map-template.html'"></div>
             </div>
         </div><!-- /.container -->
 

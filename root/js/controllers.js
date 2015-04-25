@@ -291,9 +291,32 @@ ctrls.controller("formCtrl",
                 */
             }).
             error(function(data, status) {
-                $scope.feedback = status+" "+data
+                $scope.feedback = status+" "+data;
             });
         }
 
     }
+});
+
+ctrls.controller("mapCtrl",
+        function($scope, $http, Backend) {
+
+    angular.extend($scope, {
+        center: {
+            lat: 51.505,
+            lon: -0.09,
+            zoom: 8,
+            autodiscover: true
+        },
+        defaults: {
+            interactions: {
+                mouseWheelZoom: true
+            },
+            controls: {
+                zoom: false,
+                rotate: false,
+                attribution: false 
+            }
+        }
+    });
 });

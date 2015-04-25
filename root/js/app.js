@@ -2,7 +2,8 @@
 
 var app = angular.module("scandalousApp", [
     "scandalousServices",
-    "scandalousControllers"
+    "scandalousControllers",
+    "openlayers-directive"
 
 ]);
 
