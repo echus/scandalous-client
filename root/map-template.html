@@ -4,6 +4,13 @@
                     ol-defaults="defaults"
                     width="640px" 
                     height="480px">
+
+
+          <ol-marker ng-repeat="marker in markers" lat="marker.lat" lon="marker.lon"></ol-marker>
+
+
+
+          
         </openlayers>
     </div><!-- /.panel-body -->
 </div><!-- /.panel panel-default -->

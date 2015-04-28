@@ -299,8 +299,16 @@ ctrls.controller("formCtrl",
 });
 
 ctrls.controller("mapCtrl",
-        function($scope, $http, Backend) {
+        function($scope) {
 
+    var markers = [
+        {lat: -25.86498, lon: 133.38822},
+        {lat: -25.86485, lon: 133.38805},
+        {lat: -25.86423, lon: 133.3869},
+        {lat: -25.85589, lon: 133.35997},
+        {lat: -25.85338, lon: 133.35295},
+        {lat: -25.850940000000005, lon: 133.34682}
+    ]
     angular.extend($scope, {
         center: {
             lat: 51.505,
@@ -317,6 +325,15 @@ ctrls.controller("mapCtrl",
                 rotate: false,
                 attribution: false 
             }
-        }
+        },
+        markers: markers
     });
 });
+/*
+ [
+    [-25.86498, 133.38822, 511.7770385742188],
+    [-25.86485, 133.38805, 512.477783203125],
+    [-25.86423, 133.3869, 514.9624633789062],
+    [-25.85589, 133.35997, 508.6309509277344]
+]
+ */
