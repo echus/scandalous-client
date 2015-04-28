@@ -452,7 +452,8 @@ angular.module('openlayers-directive')
         return {
             restrict: 'E',
             scope: {
-                properties: '=olGeomProperties'
+                properties: '=olGeomProperties',
+                coords: '=coords'
             },
             require: '^openlayers',
             replace: true,
@@ -473,7 +474,9 @@ angular.module('openlayers-directive')
                     map.addLayer(layer);
                     if (isDefined(attrs.coords)) {
                         var proj = attrs.proj || 'EPSG:4326';
-                        var coords = JSON.parse(attrs.coords);
+                        //var coords = JSON.parse(attrs.coords);
+                        var coords = scope.coords;
+                        console.log(coords)
                         var data = {
                             type: 'Polygon',
                             coords: coords,

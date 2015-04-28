@@ -298,8 +298,8 @@ ctrls.controller("formCtrl",
     }
 });
 
-ctrls.controller("mapCtrl",
-        function($scope) {
+ctrls.controller("mapCtrl", function($scope) {
+
 
     var markers = [
         {lat: -25.86498, lon: 133.38822},
@@ -308,13 +308,14 @@ ctrls.controller("mapCtrl",
         {lat: -25.85589, lon: 133.35997},
         {lat: -25.85338, lon: 133.35295},
         {lat: -25.850940000000005, lon: 133.34682}
-    ]
+    ];
+
     angular.extend($scope, {
         center: {
             lat: 51.505,
             lon: -0.09,
-            zoom: 8,
-            autodiscover: true
+            zoom: 2,
+            autodiscover: false
         },
         defaults: {
             interactions: {
@@ -326,8 +327,28 @@ ctrls.controller("mapCtrl",
                 attribution: false 
             }
         },
-        markers: markers
+        markers: markers,
+        wms: {
+            visible: true,
+            opacity: 0.5,
+            source: {
+                type: 'ImageWMS',
+                url: 'http://demo.opengeo.org/geoserver/wms',
+                params: { LAYERS: 'topp:states' }
+            }
+        }
     });
+
+    $scope.coords = [
+        [[133.38822, -25.86498], [133.38805, -25.86485]],
+        [[133.38805, -25.86485], [133.3869, -25.86423]],
+        [[133.3869, -25.86423], [133.35997, -25.85589]],
+        [[133.35997, -25.85589], [133.35295, -25.85338]]
+    ];
+
+    //$scope.coords = [[[-29.013439999999996, 134.75441], [-29.013240000000003, 134.75443]]];
+    
+    //$scope.coords = [[[-58.48,-34.40], [-58.58,-34.50]],[[-58.38,-34.60], [-58.58,-34.60]]];
 });
 /*
  [
