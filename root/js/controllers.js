@@ -204,7 +204,7 @@ ctrls.controller("graphCtrl",
             $scope.chart.data = {columns: columns};
         })
     }
-    $interval(updateGraph, 1000, 1);
+    $interval(updateGraph, 1000, 0);
 });
 
 ctrls.controller("valueCtrl",
@@ -300,20 +300,55 @@ ctrls.controller("formCtrl",
 
 ctrls.controller("mapCtrl", function($scope) {
 
-
-    var markers = [
-        {lat: -25.86498, lon: 133.38822},
-        {lat: -25.86485, lon: 133.38805},
-        {lat: -25.86423, lon: 133.3869},
-        {lat: -25.85589, lon: 133.35997},
-        {lat: -25.85338, lon: 133.35295},
-        {lat: -25.850940000000005, lon: 133.34682}
+    var coords = [
+        [-25.86498, 133.38822, 511.7770385742188], 
+        [-25.86485, 133.38805, 512.477783203125], 
+        [-25.86423, 133.3869, 514.9624633789062], 
+        [-25.85589, 133.35997, 508.6309509277344], 
+        [-25.85338, 133.35295, 513.0886840820312], 
+        [-25.850940000000005, 133.34682, 510.9010925292969], 
+        [-25.83718, 133.31012, 516.8212280273438],
+        [-25.8369, 133.30928, 516.2871704101562], 
+        [-25.83656, 133.30787, 515.8281860351562], 
+        [-25.83636, 133.30625, 514.0219116210938], 
+        [-25.83627, 133.30412, 513.2046508789062], 
+        [-25.83627, 133.30312, 513.7393798828125], 
+        [-25.8363, 133.30259, 512.967529296875],
+        [-25.83633, 133.30237000000002, 512.6470947265625], 
+        [-25.83647, 133.30195, 512.0354614257812], 
+        [-25.83658, 133.30175, 511.9368591308594], 
+        [-25.83673, 133.30156, 511.7522277832031], 
+        [-25.83683, 133.30146, 511.585693359375], 
+        [-25.83695, 133.30137, 511.3641967773438], 
+        [-25.83773, 133.30099, 511.0], 
+        [-25.83861, 133.30039, 511.2364807128906], 
+        [-25.83889, 133.30022, 511.4840393066406]
     ];
+
+
+    var start = {
+        lat: coords[0][0],
+        lon: coords[0][1],
+        label: {
+            message: 'Start',
+            show: false,
+            showOnMouseOver: true
+        }
+    };
+    var end = {
+        lat: coords[coords.length-1][0],
+        lon: coords[coords.length-1][1],
+        label: {
+            message: 'End',
+            show: false,
+            showOnMouseOver: true
+        }
+    }
 
     angular.extend($scope, {
         center: {
-            lat: -25.86498,
-            lon: 133.38822,
+            lat: coords[0][0],
+            lon: coords[0][1],
             zoom: 12,
             autodiscover: false
         },
@@ -322,37 +357,36 @@ ctrls.controller("mapCtrl", function($scope) {
                 mouseWheelZoom: true
             },
             controls: {
-                zoom: false,
-                rotate: false,
-                attribution: false 
+                zoom: true,
+                rotate: true,
+                attribution: true 
             }
         },
-        markers: markers,
-        wms: {
-            visible: true,
-            opacity: 0.5,
-            source: {
-                type: 'ImageWMS',
-                url: 'http://demo.opengeo.org/geoserver/wms',
-                params: { LAYERS: 'topp:states' }
-            }
-        }
+        start: start,
+        end: end
     });
+
+    /**
+     * @param coord GPS coordinate in the form of [lat, lon, alt]
+     */
+    var formatCoord = function(coord) {
+        //swap lat with lon to match ol directive path format. remove alt
+        return [coord[1], coord[0]];
+    }
 
     $scope.coords = [
         [[133.38822, -25.86498], [133.38805, -25.86485]],
-        [[133.38805, -25.86485], [133.3869, -25.86423]],
-        [[133.3869, -25.86423], [133.35997, -25.85589]],
-        [[133.35997, -25.85589], [133.35295, -25.85338]]
     ];
-
+    var i = 2;
     $scope.update = function() {
-        $scope.coords.push([[133.35295, -25.85338], [133.34682, -25.850940000000005]]);
-        console.log($scope.coords);
+        if (i === coords.length) return;
+
+        var nextCoord = [];
+        nextCoord.push($scope.coords[$scope.coords.length - 1][1]);
+        nextCoord.push(formatCoord(coords[i++]));
+        $scope.coords.push(nextCoord);
     }
-    //$scope.coords = [[[-29.013439999999996, 134.75441], [-29.013240000000003, 134.75443]]];
-    
-    //$scope.coords = [[[-58.48,-34.40], [-58.58,-34.50]],[[-58.38,-34.60], [-58.58,-34.60]]];
+
 });
 /*
  [
