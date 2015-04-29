@@ -467,33 +467,37 @@ angular.module('openlayers-directive')
                 var olScope = controller.getOpenlayersScope();
 
                 olScope.getMap().then(function(map) {
-                    var mapDefaults = olMapDefaults.getDefaults(olScope);
-                    var viewProjection = mapDefaults.view.projection;
+                    scope.$watchCollection('coords', function(coords) {
+                        //console.log(coords);
+                    
+                        var mapDefaults = olMapDefaults.getDefaults(olScope);
+                        var viewProjection = mapDefaults.view.projection;
 
-                    var layer = createVectorLayer();
-                    map.addLayer(layer);
-                    if (isDefined(attrs.coords)) {
-                        var proj = attrs.proj || 'EPSG:4326';
-                        //var coords = JSON.parse(attrs.coords);
-                        var coords = scope.coords;
-                        console.log(coords)
-                        var data = {
-                            type: 'Polygon',
-                            coords: coords,
-                            projection: proj,
-                            style: mapDefaults.styles.path
-                        };
-                        var feature = createFeature(data, viewProjection);
-                        layer.getSource().addFeature(feature);
+                        var layer = createVectorLayer();
+                        map.addLayer(layer);
+                        if (isDefined(attrs.coords)) {
+                            var proj = attrs.proj || 'EPSG:4326';
+                            //var coords = JSON.parse(attrs.coords);
+                            var coords = scope.coords;
+                            //console.log(coords)
+                            var data = {
+                                type: 'Polygon',
+                                coords: coords,
+                                projection: proj,
+                                style: mapDefaults.styles.path
+                            };
+                            var feature = createFeature(data, viewProjection);
+                            layer.getSource().addFeature(feature);
 
-                        if (attrs.message) {
-                            scope.message = attrs.message;
-                            var extent = feature.getGeometry().getExtent();
-                            var label = createOverlay(element, extent);
-                            map.addOverlay(label);
+                            if (attrs.message) {
+                                scope.message = attrs.message;
+                                var extent = feature.getGeometry().getExtent();
+                                var label = createOverlay(element, extent);
+                                map.addOverlay(label);
+                            }
+                            return;
                         }
-                        return;
-                    }
+                    });
                 });
             }
         };

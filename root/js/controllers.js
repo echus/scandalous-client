@@ -312,9 +312,9 @@ ctrls.controller("mapCtrl", function($scope) {
 
     angular.extend($scope, {
         center: {
-            lat: 51.505,
-            lon: -0.09,
-            zoom: 2,
+            lat: -25.86498,
+            lon: 133.38822,
+            zoom: 12,
             autodiscover: false
         },
         defaults: {
@@ -346,6 +346,10 @@ ctrls.controller("mapCtrl", function($scope) {
         [[133.35997, -25.85589], [133.35295, -25.85338]]
     ];
 
+    $scope.update = function() {
+        $scope.coords.push([[133.35295, -25.85338], [133.34682, -25.850940000000005]]);
+        console.log($scope.coords);
+    }
     //$scope.coords = [[[-29.013439999999996, 134.75441], [-29.013240000000003, 134.75443]]];
     
     //$scope.coords = [[[-58.48,-34.40], [-58.58,-34.50]],[[-58.38,-34.60], [-58.58,-34.60]]];
