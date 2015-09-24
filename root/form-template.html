@@ -1,0 +1,25 @@
+<!-- node/channel submission form -->
+<div class="panel panel-default">
+    <!-- Single button for node selection-->
+    <span class="nullable">
+        <select ng-model="form.node"
+                ng-options="node.node+': '+node.device for node in nodes"
+                ng-change="getFormChannels()">
+            <option value="">-- choose node --</option>
+        </select>
+    </span>
+
+    <!-- Single button for channel selection-->
+    <span class="nullable">
+        <select ng-model="form.channel"
+                ng-options="channel.channel+': '+channel.value for channel in form.channels">
+            <option value="">-- choose channel --</option>
+        </select>
+    </span>
+
+    <form novalidate class="simple-form">
+        Data: <input type="number" ng-model="form.data" placeholder="1000"/>
+        <input type="submit" ng-click="sendData()" value="Send"/>
+    </form>
+    <p class="text-warning">{{form.feedback}}</p>
+</div>

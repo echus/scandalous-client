@@ -33,10 +33,11 @@ setInterval(function() {
   }
 }, 500);
 app.get("/packets", function(req, res) {
+  var subPackets = packets.slice(0,req.query.limit);
   console.log();
-  console.log(packets);
+  console.log(subPackets);
   console.log();
-  res.send(packets);
+  res.send(subPackets);
 });
 
 var server = app.listen(process.argv[3], process.argv[2]);

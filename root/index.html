@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <title>Scandalous Front End</title>
+  <title>Scandalous</title>
   <meta charset="utf-8">
   <!-- ensure proper rendering and touch zooming on devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +14,7 @@
   <link rel="stylesheet" href="css/bootstrap/css/bootstrap.min.css">
 
   <!-- Optional theme -->
-  <link rel="stylesheet" href="css/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="css/bootstrap/css/bootswatch.cyborg.bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="css/bootstrap/js/bootstrap.min.js"></script>
@@ -30,120 +31,75 @@
 
   <!-- additional CSS -->
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
+  <link rel="stylesheet" type="text/css" href="css/navbar.css"/>
+  <link rel="stylesheet" type="text/css" href="css/c3custom.css"/>
+
+    <!-- load openlayers -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-sanitize.min.js"></script>
+    <script src="http://openlayers.org/en/v3.0.0/build/ol.js"></script>
+    <script src="js/angular-openlayers-directive/dist/angular-openlayers-directive.js"></script>
+
+
 </head>
+
 <body ng-app="myApp">
-  <div class="container">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <img src="img/scandolous_100.png" class="img-responsive center-block" alt="Scandalous banner"/>
-      </div>
-      <div class="panel-body">
-        <div class="row" ng-controller="mainCtrl">
-          <!-- chart + live channel value -->
-          <div class="col-md-8">
-            <!-- chart -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">
-                  <div class="row">
-                    <div class="col-md-6">
-                      Interactive Chart
-                    </div>
-                    <div class="col-md-6">
-                      <form class="form-inline">
-                        <div class="form-group">
-                          <label>Limit</label> <input type="number" class="form-control" ng-model="limit">
-                        </div>
-                      </form>
-                      
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="panel-body">
-                <div xychart ng-model="chart" id="chart"></div>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-            <!-- live channel value -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">Current Channel Value</div>
-              </div>
-              <div class="panel-body">
-                <!-- all channel readings -->
-                <p class="text-center" id="value-display" ng-repeat="column in chart.data.columns">
-                  <span ng-if="$index > 0">
-                    <strong>{{column[0]}} {{column[1]}} {{getUnit(column[0])}}</strong>
-                  </span>
-                </p>
-                <!-- timestamp for channel reading -->
-                <p class="text-center" id="value-timestamp">
-                  {{parseTime(chart.data.columns[0][1])}}
-                </p>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-          </div><!-- /.col-md-8 -->
-          <!-- selectable nodes and channels -->
-          <div class="col-md-4">
-            <!-- nodes -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">
-                  <div class="row">
-                    <div class="col-md-9">
-                      Available Nodes
-                    </div>
-                    <div class="col-md-3">
-                      <button type="button" class="btn btn-warning" ng-click="getNodes()">
-                        <span class="glyphicon glyphicon-refresh"></span>
-                      </button>
-                    </div><!-- /.col-md-3 -->
-                  </div><!-- /.row -->
-                </div><!-- /.panel-title -->
-              </div><!-- /.panel-heading -->
-              <div class="panel-body">
-                <ul class="nav nav-pills nav-stacked" id="nodes">
-                  <li ng-repeat="node in nodes" ng-class="{active:node.isActive}">
-                    <a href="" ng-click="nodes.toggle(node)">
-                      {{node.node}}: {{node.device}}
-                    </a>
-                  </li>
-                </ul>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-            <!-- channels -->
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title">Channels</div>
-              </div>
-              <div class="panel-body">
-                <ul class="nav nav-pills nav-stacked" id="channels">
-                  <li ng-repeat="channel in channels" ng-class="{active:channel.isActive}">
-                    <a href="" ng-click="channels.toggle(channel)">
-                      {{channel.channel}}: {{channel.value}}
-                    </a>
-                  </li>
-                </ul>
-              </div><!-- /.panel-body -->
-            </div><!-- /.panel panel-default -->
-          </div><!-- /.col-md-4 -->
-        </div><!-- /.row -->
-        <!-- domain and port -->
-        <div class="row">
-          <div class="col-md-12">
-            <div class="input-group">
-              <span class="input-group-addon">Domain</span>
-              <input type="text" class="form-control" ng-controller="domainCtrl" ng-model="domain" ng-change="setDomain(domain)"/>
-              <span class="input-group-addon">Port</span>
-              <input type="text" class="form-control" ng-controller="portCtrl" ng-model="port" ng-change="setPort(port)"/>
-            </div><!-- /.input-group -->
-          </div><!-- /.col-md-12 -->
-        </div><!-- /.row -->
-      </div><!-- /.panel-body -->
-    </div><!-- /.panel panel-default-->
+  
+  <div ng-controller="mainCtrl">
+
+  <!-- Navigation -->
+  <div ng-include="'navbar-template.html'"></div>
+
+ 
+  <!-- Content -->
+  <div class="container-fluid">
+     
+    <!-- Node and Channel lists  -->
+    <div class="row">
+      
+      <div class="col-md-2">
+         
+        <div ng-include="'node-list-template.html'"></div>
+
+      </div><!-- node/channel column -->
+    
+    <!-- Channel lists  -->
+      <div class="col-md-2">
+        <div ng-include="'channel-list-template.html'"></div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <label>Limit:</label><input type="number" class="form-control" ng-model="limit">
+          </div>
+        </div>
+        
+
+      </div><!-- node/channel column -->
+    
+      <!-- chart + live channel value -->
+      <div class="col-md-8">
+        
+        <!-- chart -->
+        <div ng-include="'chart-template.html'"></div>
+
+        <!-- live channel value -->
+        <div ng-include="'channel-value-template.html'"></div>
+      
+      </div><!-- graph column -->
+    
+    </div><!-- row -->
+    <div class="row">
+        <div ng-include="'form-template.html'"></div>
+    </div>
+    <div class="row">
+        <div ng-include="'map-template.html'"></div>
+    </div>
+            
   </div><!-- /.container -->
+  </div><!-- ng-controller -->
+
   <!-- javascript application and controllers -->
   <script src="js/app.js"></script>
   <script src="js/directives.js"></script>
+
 </body>
 </html>
